@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { formatDateDDMMYYYY } from "@/lib/date-utils"
 
 interface Customer {
-  id: number
+  id: string
   name: string
   code: string
   phone: string
@@ -14,16 +14,29 @@ interface Customer {
   treeCount: number
   lastHarvest: string
   nextHarvest: string
+  mapUrl?: string
 }
 
 interface CustomersTableProps {
   customers: Customer[]
   onEdit: (customer: Customer) => void
-  onDelete: (id: number) => void
-  onShowMap: (customer: Customer) => void
+  onDelete: (id: string) => void
 }
 
-export default function CustomersTable({ customers, onEdit, onDelete, onShowMap }: CustomersTableProps) {
+export default function CustomersTable({ customers, onEdit, onDelete }: CustomersTableProps) {
+  const getGoogleMapsUrl = (customer: Customer) => {
+    if (customer.mapUrl) {
+      // If it's an iframe snippet, extract the URL
+      const srcMatch = customer.mapUrl.match(/src="([^"]+)"/)
+      if (srcMatch) return srcMatch[1].replace("/embed", "")
+      return customer.mapUrl
+    }
+
+    // Fallback: Search by Name + Place
+    const query = encodeURIComponent(`${customer.name} ${customer.place}`)
+    return `https://www.google.com/maps/search/${query}`
+  }
+
   return (
     <div className="bg-card rounded-lg shadow-md border border-border overflow-hidden">
       <div className="overflow-x-auto">
@@ -59,10 +72,12 @@ export default function CustomersTable({ customers, onEdit, onDelete, onShowMap 
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => onShowMap(customer)}
-                      className="gap-1 text-secondary border-secondary hover:bg-secondary/10"
+                      asChild
+                      className="gap-1 text-secondary border-secondary hover:bg-secondary/10 cursor-pointer"
                     >
-                      <MapPin size={16} /> Map
+                      <a href={getGoogleMapsUrl(customer)} target="_blank" rel="noopener noreferrer">
+                        <MapPin size={16} /> Map
+                      </a>
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => onEdit(customer)} className="gap-1">
                       <Edit size={16} />

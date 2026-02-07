@@ -5,55 +5,67 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { MultiSelect } from "@/components/ui/multi-select"
 import { X } from "lucide-react"
-
-interface Sale {
-  id: number
-  customer: string
-  employees: string[]
-  date: string
-  trees: number[]
-  totalTrees: number
-  perTreeAmount: number
-  totalAmount: number
-  paymentMode: string
-}
+import { customersApi, employeesApi } from "@/lib/api"
+import { useToast } from "@/hooks/use-toast"
 
 interface SalesModalProps {
   isOpen: boolean
   onClose: () => void
   onSubmit: (data: any) => void
-  sale?: Sale | null
+  sale?: any | null
 }
-
-const mockCustomers = ["Rajesh Kumar", "Priya Singh", "Amit Patel", "Deepak Verma"]
-const mockEmployees = ["Priya Singh", "Amit Patel", "Deepak Verma", "Neha Sharma", "Ravi Kumar"]
 
 export default function SalesModal({ isOpen, onClose, onSubmit, sale }: SalesModalProps) {
   const [formData, setFormData] = useState({
-    customer: "",
+    customerId: "",
     employees: [] as string[],
-    date: new Date().toISOString().split("T")[0],
+    saleDate: new Date().toISOString().split("T")[0],
     perTreeAmount: 50,
     paymentMode: "Cash",
   })
 
   const [treeCounts, setTreeCounts] = useState<number[]>([])
+  const [customers, setCustomers] = useState<any[]>([])
+  const [employees, setEmployees] = useState<any[]>([])
+  const { toast } = useToast()
+
+  useEffect(() => {
+    if (isOpen) {
+      const fetchData = async () => {
+        try {
+          const [customersRes, employeesRes] = await Promise.all([
+            customersApi.getAll(),
+            employeesApi.getAll()
+          ])
+          setCustomers(customersRes.data || [])
+          const mappedEmployees = (employeesRes.data || []).map((emp: any) => ({
+            ...emp,
+            id: emp.id || emp._id
+          }))
+          setEmployees(mappedEmployees)
+        } catch (error: any) {
+          toast({ title: "Error", description: "Failed to load options", variant: "destructive" })
+        }
+      }
+      fetchData()
+    }
+  }, [isOpen])
 
   useEffect(() => {
     if (sale) {
       setFormData({
-        customer: sale.customer,
-        employees: sale.employees,
-        date: sale.date,
+        customerId: sale.customerId?._id || sale.customerId?.id || sale.customerId || "",
+        employees: (sale.employees || []).map((e: any) => e._id || e.id || e),
+        saleDate: sale.saleDate ? sale.saleDate.split("T")[0] : new Date().toISOString().split("T")[0],
         perTreeAmount: sale.perTreeAmount,
         paymentMode: sale.paymentMode,
       })
-      setTreeCounts(sale.trees)
+      setTreeCounts(sale.treesHarvested || [])
     } else {
       setFormData({
-        customer: "",
+        customerId: "",
         employees: [],
-        date: new Date().toISOString().split("T")[0],
+        saleDate: new Date().toISOString().split("T")[0],
         perTreeAmount: 50,
         paymentMode: "Cash",
       })
@@ -64,16 +76,6 @@ export default function SalesModal({ isOpen, onClose, onSubmit, sale }: SalesMod
   const handleChange = (e: any) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
-  }
-
-  const handleEmployeeToggle = (employee: string) => {
-    setFormData((prev) => {
-      const updated = prev.employees.includes(employee)
-        ? prev.employees.filter((e) => e !== employee)
-        : [...prev.employees, employee]
-      setTreeCounts(new Array(updated.length).fill(0))
-      return { ...prev, employees: updated }
-    })
   }
 
   const handleTreeCountChange = (index: number, value: string) => {
@@ -88,10 +90,10 @@ export default function SalesModal({ isOpen, onClose, onSubmit, sale }: SalesMod
   const handleSubmit = (e: any) => {
     e.preventDefault()
     onSubmit({
-      customer: formData.customer,
+      customerId: formData.customerId,
       employees: formData.employees,
-      date: formData.date,
-      trees: treeCounts,
+      saleDate: formData.saleDate,
+      treesHarvested: treeCounts,
       totalTrees,
       perTreeAmount: formData.perTreeAmount,
       totalAmount,
@@ -100,6 +102,15 @@ export default function SalesModal({ isOpen, onClose, onSubmit, sale }: SalesMod
   }
 
   if (!isOpen) return null
+
+  const employeeOptions = employees.map(emp => ({
+    label: emp.name,
+    value: emp.id || emp._id
+  }))
+
+  const getEmployeeName = (id: string) => {
+    return employees.find(emp => (emp.id || emp._id) === id)?.name || "Unknown"
+  }
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -115,16 +126,16 @@ export default function SalesModal({ isOpen, onClose, onSubmit, sale }: SalesMod
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">Customer *</label>
             <select
-              name="customer"
-              value={formData.customer}
+              name="customerId"
+              value={formData.customerId}
               onChange={handleChange}
               required
               className="w-full px-4 py-2 bg-background border border-border rounded-lg text-foreground"
             >
               <option value="">Select a customer</option>
-              {mockCustomers.map((c) => (
-                <option key={c} value={c}>
-                  {c}
+              {customers.map((c) => (
+                <option key={c.id || c._id} value={c.id || c._id}>
+                  {c.name} ({c.code})
                 </option>
               ))}
             </select>
@@ -133,11 +144,19 @@ export default function SalesModal({ isOpen, onClose, onSubmit, sale }: SalesMod
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">Select Employees *</label>
             <MultiSelect
-              options={mockEmployees}
+              options={employeeOptions}
               selected={formData.employees}
               onSelectedChange={(selected) =>
                 setFormData((prev) => {
-                  setTreeCounts(new Array(selected.length).fill(0))
+                  const newTreeCounts = new Array(selected.length).fill(0)
+                  // Try to preserve existing counts if possible
+                  selected.forEach((id, idx) => {
+                    const oldIdx = prev.employees.indexOf(id)
+                    if (oldIdx !== -1) {
+                      newTreeCounts[idx] = treeCounts[oldIdx]
+                    }
+                  })
+                  setTreeCounts(newTreeCounts)
                   return { ...prev, employees: selected }
                 })
               }
@@ -148,9 +167,9 @@ export default function SalesModal({ isOpen, onClose, onSubmit, sale }: SalesMod
           {formData.employees.length > 0 && (
             <div className="space-y-3 bg-primary/5 p-4 rounded-lg border border-primary/20">
               <h3 className="font-semibold text-foreground mb-3">Tree Count for Each Employee</h3>
-              {formData.employees.map((emp, index) => (
+              {formData.employees.map((empId, index) => (
                 <div key={index} className="flex items-center gap-3">
-                  <label className="flex-1 text-sm text-foreground">{emp}</label>
+                  <label className="flex-1 text-sm text-foreground">{getEmployeeName(empId)}</label>
                   <Input
                     type="number"
                     value={treeCounts[index] || ""}
@@ -169,8 +188,8 @@ export default function SalesModal({ isOpen, onClose, onSubmit, sale }: SalesMod
               <label className="block text-sm font-medium text-foreground mb-2">Date *</label>
               <Input
                 type="date"
-                name="date"
-                value={formData.date}
+                name="saleDate"
+                value={formData.saleDate}
                 onChange={handleChange}
                 required
                 className="w-full"
@@ -197,6 +216,7 @@ export default function SalesModal({ isOpen, onClose, onSubmit, sale }: SalesMod
               >
                 <option value="Cash">Cash</option>
                 <option value="GPay">GPay</option>
+                <option value="Bank Transfer">Bank Transfer</option>
               </select>
             </div>
           </div>
@@ -226,7 +246,7 @@ export default function SalesModal({ isOpen, onClose, onSubmit, sale }: SalesMod
             <Button
               type="submit"
               className="bg-primary hover:bg-primary/90 text-white"
-              disabled={!formData.customer || formData.employees.length === 0}
+              disabled={!formData.customerId || formData.employees.length === 0}
             >
               {sale ? "Update Sales" : "Add Sales"}
             </Button>

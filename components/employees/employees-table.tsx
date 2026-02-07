@@ -4,7 +4,7 @@ import { Edit, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface Employee {
-  id: number
+  id: string
   name: string
   code: string
   contact: string
@@ -16,7 +16,7 @@ interface Employee {
 interface EmployeesTableProps {
   employees: Employee[]
   onEdit: (employee: Employee) => void
-  onDelete: (id: number) => void
+  onDelete: (id: string) => void
 }
 
 export default function EmployeesTable({ employees, onEdit, onDelete }: EmployeesTableProps) {

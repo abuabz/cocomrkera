@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { X } from "lucide-react"
 
 interface Employee {
-  id: number
+  id: string
   name: string
   code: string
   contact: string
@@ -21,9 +21,16 @@ interface EmployeeModalProps {
   onClose: () => void
   onSubmit: (data: any) => void
   employee?: Employee | null
+  existingEmployees?: Employee[]
 }
 
-export default function EmployeeModal({ isOpen, onClose, onSubmit, employee }: EmployeeModalProps) {
+export default function EmployeeModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  employee,
+  existingEmployees = []
+}: EmployeeModalProps) {
   const [formData, setFormData] = useState({
     name: "",
     code: "",
@@ -37,12 +44,22 @@ export default function EmployeeModal({ isOpen, onClose, onSubmit, employee }: E
 
   useEffect(() => {
     if (employee) {
-      setFormData(employee)
-      setPhotoPreview(employee.photo)
+      setFormData({
+        name: employee.name || "",
+        code: employee.code || "",
+        contact: employee.contact || "",
+        altContact: employee.altContact || "",
+        address: employee.address || "",
+        photo: employee.photo || "/employee-photo.jpg",
+      })
+      setPhotoPreview(employee.photo || "/employee-photo.jpg")
     } else {
+      // Auto-generate next code
+      const nextCode = `EMP-${String(existingEmployees.length + 1).padStart(3, "0")}`
+
       setFormData({
         name: "",
-        code: "",
+        code: nextCode,
         contact: "",
         altContact: "",
         address: "",
@@ -50,7 +67,7 @@ export default function EmployeeModal({ isOpen, onClose, onSubmit, employee }: E
       })
       setPhotoPreview("/employee-photo.jpg")
     }
-  }, [employee, isOpen])
+  }, [employee, isOpen, existingEmployees.length])
 
   const handleChange = (e: any) => {
     const { name, value } = e.target
@@ -72,6 +89,19 @@ export default function EmployeeModal({ isOpen, onClose, onSubmit, employee }: E
 
   const handleSubmit = (e: any) => {
     e.preventDefault()
+
+    // Check for duplicate name
+    const isDuplicate = existingEmployees.some(
+      (emp) =>
+        emp.name.toLowerCase() === formData.name.toLowerCase() &&
+        emp.id !== employee?.id
+    )
+
+    if (isDuplicate) {
+      alert("Error: An employee with this name already exists. Please use a unique name.")
+      return
+    }
+
     onSubmit(formData)
   }
 
@@ -157,12 +187,13 @@ export default function EmployeeModal({ isOpen, onClose, onSubmit, employee }: E
               />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-foreground mb-2">Address</label>
+              <label className="block text-sm font-medium text-foreground mb-2">Address *</label>
               <Textarea
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
                 placeholder="Enter employee address"
+                required
                 rows={3}
                 className="w-full"
               />
@@ -170,7 +201,7 @@ export default function EmployeeModal({ isOpen, onClose, onSubmit, employee }: E
           </div>
 
           <div className="flex gap-3 justify-end pt-6">
-            <Button variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
             <Button type="submit" className="bg-primary hover:bg-primary/90 text-white">

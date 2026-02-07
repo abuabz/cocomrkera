@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button"
 import { formatDateDDMMYYYY } from "@/lib/date-utils"
 
 interface Sale {
-  id: number
+  id: string
   customer: string
   employees: string[]
   date: string
-  trees: number[]
+  treesHarvested: number[]
   totalTrees: number
   perTreeAmount: number
   totalAmount: number
@@ -40,21 +40,20 @@ export default function SalesTable({ sales, onEdit, onDelete }: SalesTableProps)
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {sales.map((sale) => (
+            {sales.map((sale: any) => (
               <tr key={sale.id} className="hover:bg-primary/5 transition-colors">
-                <td className="px-6 py-4 text-sm text-card-foreground font-medium">{sale.customer}</td>
-                <td className="px-6 py-4 text-sm text-muted-foreground">{sale.employees.join(", ")}</td>
+                <td className="px-6 py-4 text-sm font-medium text-foreground">{sale.customerName}</td>
+                <td className="px-6 py-4 text-sm text-muted-foreground">{sale.employeeNames.join(", ")}</td>
                 <td className="px-6 py-4 text-sm text-muted-foreground">{formatDateDDMMYYYY(sale.date)}</td>
-                <td className="px-6 py-4 text-sm text-card-foreground font-semibold">{sale.totalTrees}</td>
+                <td className="px-6 py-4 text-sm text-foreground font-semibold">{sale.totalTrees}</td>
                 <td className="px-6 py-4 text-sm text-muted-foreground">₹{sale.perTreeAmount}</td>
-                <td className="px-6 py-4 text-sm text-card-foreground font-bold text-secondary">
+                <td className="px-6 py-4 text-sm font-bold text-secondary">
                   ₹{sale.totalAmount.toLocaleString()}
                 </td>
                 <td className="px-6 py-4 text-sm">
                   <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      sale.paymentMode === "Cash" ? "bg-primary/10 text-primary" : "bg-secondary/10 text-secondary"
-                    }`}
+                    className={`px-3 py-1 rounded-full text-xs font-semibold ${sale.paymentMode === "Cash" ? "bg-primary/10 text-primary" : "bg-secondary/10 text-secondary"
+                      }`}
                   >
                     {sale.paymentMode}
                   </span>

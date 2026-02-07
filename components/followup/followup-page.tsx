@@ -1,98 +1,19 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import FollowupTable from "./followup-table"
 import FollowupModal from "./followup-modal"
+import ConfirmModal from "@/components/ui/confirm-modal"
 import { Plus, Search, Calendar } from "lucide-react"
 import { isDateInRange } from "@/lib/date-utils"
-
-const SAMPLE_FOLLOWUPS = [
-  {
-    id: 1,
-    name: "Priya Singh",
-    phoneNumber: "+91 87654 32109",
-    place: "Mumbai",
-    treeCount: 300,
-    date: "2024-12-20",
-  },
-  {
-    id: 2,
-    name: "Rajesh Kumar",
-    phoneNumber: "+91 98765 43210",
-    place: "Bangalore",
-    treeCount: 250,
-    date: "2024-12-19",
-  },
-  {
-    id: 3,
-    name: "Amit Patel",
-    phoneNumber: "+91 98765 43212",
-    place: "Pune",
-    treeCount: 280,
-    date: "2024-12-18",
-  },
-  {
-    id: 4,
-    name: "Anjali Sharma",
-    phoneNumber: "+91 87654 32110",
-    place: "Hyderabad",
-    treeCount: 320,
-    date: "2024-12-17",
-  },
-  {
-    id: 5,
-    name: "Vikram Reddy",
-    phoneNumber: "+91 76543 21098",
-    place: "Chennai",
-    treeCount: 350,
-    date: "2024-12-16",
-  },
-  {
-    id: 6,
-    name: "Deepika Verma",
-    phoneNumber: "+91 65432 10987",
-    place: "Delhi",
-    treeCount: 200,
-    date: "2024-12-15",
-  },
-  {
-    id: 7,
-    name: "Suresh Kumar",
-    phoneNumber: "+91 54321 09876",
-    place: "Kolkata",
-    treeCount: 240,
-    date: "2024-12-14",
-  },
-  {
-    id: 8,
-    name: "Neha Gupta",
-    phoneNumber: "+91 43210 98765",
-    place: "Jaipur",
-    treeCount: 260,
-    date: "2024-12-13",
-  },
-  {
-    id: 9,
-    name: "Arjun Singh",
-    phoneNumber: "+91 32109 87654",
-    place: "Lucknow",
-    treeCount: 280,
-    date: "2024-12-12",
-  },
-  {
-    id: 10,
-    name: "Meera Iyer",
-    phoneNumber: "+91 21098 76543",
-    place: "Kochi",
-    treeCount: 310,
-    date: "2024-12-11",
-  },
-]
+import { followupsApi } from "@/lib/api"
+import { useToast } from "@/hooks/use-toast"
 
 export default function FollowupPage() {
-  const [followups, setFollowups] = useState(SAMPLE_FOLLOWUPS)
+  const [followups, setFollowups] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [dateFilter, setDateFilter] = useState({
     from: "",
@@ -100,34 +21,90 @@ export default function FollowupPage() {
   })
 
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedFollowup, setSelectedFollowup] = useState<(typeof followups)[0] | null>(null)
-  const [editingId, setEditingId] = useState<number | null>(null)
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+  const [selectedFollowup, setSelectedFollowup] = useState<any | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const { toast } = useToast()
 
-  const handleAddFollowup = (data: any) => {
-    if (editingId) {
-      setFollowups(followups.map((f) => (f.id === editingId ? { ...data, id: editingId } : f)))
-      setEditingId(null)
-    } else {
-      setFollowups([...followups, { ...data, id: Date.now() }])
+  const fetchFollowups = async () => {
+    try {
+      setLoading(true)
+      const response = await followupsApi.getAll()
+      const data = (response.data || []).map((item: any) => ({
+        ...item,
+        id: item.id || item._id
+      }))
+      setFollowups(data)
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to fetch followups",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
     }
-    setIsModalOpen(false)
   }
 
-  const handleEdit = (followup: (typeof followups)[0]) => {
+  useEffect(() => {
+    fetchFollowups()
+  }, [])
+
+  const handleAddFollowup = async (data: any) => {
+    try {
+      if (editingId) {
+        await followupsApi.update(editingId, data)
+        toast({ title: "Success", description: "Followup updated successfully" })
+      } else {
+        await followupsApi.create(data)
+        toast({ title: "Success", description: "Followup added successfully" })
+      }
+      fetchFollowups()
+      setIsModalOpen(false)
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Operation failed",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleEdit = (followup: any) => {
     setSelectedFollowup(followup)
     setEditingId(followup.id)
     setIsModalOpen(true)
   }
 
-  const handleDelete = (id: number) => {
-    setFollowups(followups.filter((f) => f.id !== id))
+  const handleDelete = async (id: string) => {
+    setEditingId(id)
+    setIsConfirmOpen(true)
+  }
+
+  const confirmDelete = async () => {
+    if (!editingId) return
+    try {
+      await followupsApi.delete(editingId)
+      toast({ title: "Success", description: "Followup deleted successfully" })
+      fetchFollowups()
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete followup",
+        variant: "destructive",
+      })
+    } finally {
+      setIsConfirmOpen(false)
+      setEditingId(null)
+    }
   }
 
   const filteredFollowups = followups.filter((followup) => {
+    const s = searchTerm.toLowerCase()
     const matchesSearch =
-      followup.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      followup.phoneNumber.includes(searchTerm) ||
-      followup.place.toLowerCase().includes(searchTerm.toLowerCase())
+      (followup.name?.toLowerCase() || "").includes(s) ||
+      (followup.phoneNumber || "").includes(searchTerm) ||
+      (followup.place?.toLowerCase() || "").includes(s)
 
     if (!matchesSearch) return false
 
@@ -139,7 +116,7 @@ export default function FollowupPage() {
   })
 
   return (
-    <div className="p-4 md:p-8 bg-gradient-to-br from-background to-background/95 min-h-screen w-full">
+    <div className="p-4 md:p-8 bg-linear-to-br from-background to-background/95 min-h-screen w-full">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
         <div>
           <h1 className="text-3xl md:text-4xl font-bold text-foreground">Followup</h1>
@@ -202,7 +179,11 @@ export default function FollowupPage() {
         </div>
       </div>
 
-      <FollowupTable followups={filteredFollowups} onEdit={handleEdit} onDelete={handleDelete} />
+      {loading ? (
+        <div className="flex justify-center py-12 text-muted-foreground">Loading followups...</div>
+      ) : (
+        <FollowupTable followups={filteredFollowups} onEdit={handleEdit} onDelete={handleDelete as any} />
+      )}
 
       <FollowupModal
         isOpen={isModalOpen}
@@ -213,6 +194,14 @@ export default function FollowupPage() {
         }}
         onSubmit={handleAddFollowup}
         followup={selectedFollowup}
+      />
+
+      <ConfirmModal
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={confirmDelete}
+        title="Delete Followup"
+        message="Are you sure you want to delete this followup record? This action cannot be undone."
       />
     </div>
   )

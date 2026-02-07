@@ -1,128 +1,19 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import SalesTable from "./sales-table"
 import SalesModal from "./sales-modal"
+import ConfirmModal from "@/components/ui/confirm-modal"
 import { Plus, Search, Calendar } from "lucide-react"
 import { isDateInRange } from "@/lib/date-utils"
-
-const SAMPLE_SALES = [
-  {
-    id: 1,
-    customer: "Rajesh Kumar",
-    employees: ["Priya Singh", "Amit Patel"],
-    date: "2024-12-20",
-    trees: [1200, 800],
-    totalTrees: 2000,
-    perTreeAmount: 50,
-    totalAmount: 100000,
-    paymentMode: "Cash",
-  },
-  {
-    id: 2,
-    customer: "Priya Singh",
-    employees: ["Deepika Verma"],
-    date: "2024-12-19",
-    trees: [1500],
-    totalTrees: 1500,
-    perTreeAmount: 45,
-    totalAmount: 67500,
-    paymentMode: "Bank Transfer",
-  },
-  {
-    id: 3,
-    customer: "Amit Patel",
-    employees: ["Arjun Singh", "Meera Iyer"],
-    date: "2024-12-18",
-    trees: [900, 600],
-    totalTrees: 1500,
-    perTreeAmount: 50,
-    totalAmount: 75000,
-    paymentMode: "Cash",
-  },
-  {
-    id: 4,
-    customer: "Anjali Sharma",
-    employees: ["Suresh Kumar"],
-    date: "2024-12-17",
-    trees: [1100],
-    totalTrees: 1100,
-    perTreeAmount: 48,
-    totalAmount: 52800,
-    paymentMode: "Bank Transfer",
-  },
-  {
-    id: 5,
-    customer: "Vikram Reddy",
-    employees: ["Neha Gupta", "Rajesh Kumar"],
-    date: "2024-12-16",
-    trees: [800, 700],
-    totalTrees: 1500,
-    perTreeAmount: 50,
-    totalAmount: 75000,
-    paymentMode: "Cash",
-  },
-  {
-    id: 6,
-    customer: "Deepika Verma",
-    employees: ["Amit Patel"],
-    date: "2024-12-15",
-    trees: [950],
-    totalTrees: 950,
-    perTreeAmount: 52,
-    totalAmount: 49400,
-    paymentMode: "Bank Transfer",
-  },
-  {
-    id: 7,
-    customer: "Suresh Kumar",
-    employees: ["Arjun Singh"],
-    date: "2024-12-14",
-    trees: [1000],
-    totalTrees: 1000,
-    perTreeAmount: 50,
-    totalAmount: 50000,
-    paymentMode: "Cash",
-  },
-  {
-    id: 8,
-    customer: "Neha Gupta",
-    employees: ["Meera Iyer", "Deepika Verma"],
-    date: "2024-12-13",
-    trees: [750, 850],
-    totalTrees: 1600,
-    perTreeAmount: 48,
-    totalAmount: 76800,
-    paymentMode: "Bank Transfer",
-  },
-  {
-    id: 9,
-    customer: "Arjun Singh",
-    employees: ["Priya Singh"],
-    date: "2024-12-12",
-    trees: [1200],
-    totalTrees: 1200,
-    perTreeAmount: 50,
-    totalAmount: 60000,
-    paymentMode: "Cash",
-  },
-  {
-    id: 10,
-    customer: "Meera Iyer",
-    employees: ["Vikram Reddy", "Suresh Kumar"],
-    date: "2024-12-11",
-    trees: [1300, 700],
-    totalTrees: 2000,
-    perTreeAmount: 50,
-    totalAmount: 100000,
-    paymentMode: "Bank Transfer",
-  },
-]
+import { salesApi } from "@/lib/api"
+import { useToast } from "@/hooks/use-toast"
 
 export default function SalesPage() {
-  const [sales, setSales] = useState(SAMPLE_SALES)
+  const [sales, setSales] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [dateFilter, setDateFilter] = useState({
     from: "",
@@ -130,34 +21,94 @@ export default function SalesPage() {
   })
 
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedSale, setSelectedSale] = useState<(typeof sales)[0] | null>(null)
-  const [editingId, setEditingId] = useState<number | null>(null)
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+  const [selectedSale, setSelectedSale] = useState<any | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const { toast } = useToast()
 
-  const handleAddSale = (data: any) => {
-    if (editingId) {
-      setSales(sales.map((s) => (s.id === editingId ? { ...data, id: editingId } : s)))
-      setEditingId(null)
-    } else {
-      setSales([...sales, { ...data, id: Date.now() }])
+  const fetchSales = async () => {
+    try {
+      setLoading(true)
+      const response = await salesApi.getAll()
+      // Map the data for the table
+      const mappedSales = (response.data || []).map((sale: any) => ({
+        ...sale,
+        id: sale.id || sale._id,
+        customerName: sale.customerId?.name || "Unknown",
+        employeeNames: (sale.employees || []).map((emp: any) => emp.name || "Unknown"),
+        date: sale.saleDate,
+      }))
+      setSales(mappedSales)
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to fetch sales",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
     }
-    setIsModalOpen(false)
   }
 
-  const handleEdit = (sale: (typeof sales)[0]) => {
+  useEffect(() => {
+    fetchSales()
+  }, [])
+
+  const handleAddSale = async (data: any) => {
+    try {
+      if (editingId) {
+        await salesApi.update(editingId, data)
+        toast({ title: "Success", description: "Sale updated successfully" })
+      } else {
+        await salesApi.create(data)
+        toast({ title: "Success", description: "Sale added successfully" })
+      }
+      fetchSales()
+      setIsModalOpen(false)
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Operation failed",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleEdit = (sale: any) => {
     setSelectedSale(sale)
     setEditingId(sale.id)
     setIsModalOpen(true)
   }
 
-  const handleDelete = (id: number) => {
-    setSales(sales.filter((s) => s.id !== id))
+  const handleDelete = async (id: string) => {
+    setEditingId(id)
+    setIsConfirmOpen(true)
+  }
+
+  const confirmDelete = async () => {
+    if (!editingId) return
+    try {
+      await salesApi.delete(editingId)
+      toast({ title: "Success", description: "Sale deleted successfully" })
+      fetchSales()
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete sale",
+        variant: "destructive",
+      })
+    } finally {
+      setIsConfirmOpen(false)
+      setEditingId(null)
+    }
   }
 
   const filteredSales = sales.filter((sale) => {
+    const s = searchTerm.toLowerCase()
     const matchesSearch =
-      sale.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      sale.employees.join(", ").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      sale.paymentMode.toLowerCase().includes(searchTerm.toLowerCase())
+      (sale.customerName?.toLowerCase() || "").includes(s) ||
+      (sale.employeeNames?.join(", ")?.toLowerCase() || "").includes(s) ||
+      (sale.paymentMode?.toLowerCase() || "").includes(s)
 
     if (!matchesSearch) return false
 
@@ -169,7 +120,7 @@ export default function SalesPage() {
   })
 
   return (
-    <div className="p-4 md:p-8 bg-gradient-to-br from-background to-background/95 w-full">
+    <div className="p-4 md:p-8 bg-linear-to-br from-background to-background/95 w-full">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 md:mb-8 gap-4">
         <h1 className="text-2xl md:text-4xl font-bold text-foreground">Sales Management</h1>
         <Button
@@ -229,7 +180,11 @@ export default function SalesPage() {
         </div>
       </div>
 
-      <SalesTable sales={filteredSales} onEdit={handleEdit} onDelete={handleDelete} />
+      {loading ? (
+        <div className="flex justify-center py-12 text-muted-foreground">Loading sales...</div>
+      ) : (
+        <SalesTable sales={filteredSales} onEdit={handleEdit} onDelete={handleDelete as any} />
+      )}
 
       <SalesModal
         isOpen={isModalOpen}
@@ -240,6 +195,14 @@ export default function SalesPage() {
         }}
         onSubmit={handleAddSale}
         sale={selectedSale}
+      />
+
+      <ConfirmModal
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={confirmDelete}
+        title="Delete Sale"
+        message="Are you sure you want to delete this sale record? This action cannot be undone."
       />
     </div>
   )

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { X } from "lucide-react"
 
 interface Customer {
-  id: number
+  id: string
   name: string
   code: string
   phone: string
@@ -23,9 +23,16 @@ interface CustomerModalProps {
   onClose: () => void
   onSubmit: (data: any) => void
   customer?: Customer | null
+  existingCustomers?: Customer[]
 }
 
-export default function CustomerModal({ isOpen, onClose, onSubmit, customer }: CustomerModalProps) {
+export default function CustomerModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  customer,
+  existingCustomers = []
+}: CustomerModalProps) {
   const [formData, setFormData] = useState({
     name: "",
     code: "",
@@ -40,11 +47,24 @@ export default function CustomerModal({ isOpen, onClose, onSubmit, customer }: C
 
   useEffect(() => {
     if (customer) {
-      setFormData(customer)
+      setFormData({
+        name: customer.name || "",
+        code: customer.code || "",
+        phone: customer.phone || "",
+        altPhone: customer.altPhone || "",
+        place: customer.place || "",
+        treeCount: customer.treeCount !== undefined ? String(customer.treeCount) : "",
+        lastHarvest: customer.lastHarvest ? new Date(customer.lastHarvest).toISOString().split("T")[0] : "",
+        nextHarvest: customer.nextHarvest ? new Date(customer.nextHarvest).toISOString().split("T")[0] : "",
+        mapUrl: customer.mapUrl || "",
+      })
     } else {
+      // Auto-generate next code
+      const nextCode = `CUST-${String(existingCustomers.length + 1).padStart(3, "0")}`
+
       setFormData({
         name: "",
-        code: "",
+        code: nextCode,
         phone: "",
         altPhone: "",
         place: "",
@@ -54,7 +74,7 @@ export default function CustomerModal({ isOpen, onClose, onSubmit, customer }: C
         mapUrl: "",
       })
     }
-  }, [customer, isOpen])
+  }, [customer, isOpen, existingCustomers.length])
 
   const handleChange = (e: any) => {
     const { name, value } = e.target
@@ -136,13 +156,14 @@ export default function CustomerModal({ isOpen, onClose, onSubmit, customer }: C
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Place</label>
+              <label className="block text-sm font-medium text-foreground mb-2">Place *</label>
               <Input
                 type="text"
                 name="place"
                 value={formData.place}
                 onChange={handleChange}
                 placeholder="City/Area"
+                required
                 className="w-full"
               />
             </div>
@@ -187,14 +208,14 @@ export default function CustomerModal({ isOpen, onClose, onSubmit, customer }: C
                 name="mapUrl"
                 value={formData.mapUrl}
                 onChange={handleChange}
-                placeholder="Paste Google Maps embed URL"
+                placeholder="Paste link (e.g. google.com/maps/@12.3,76.5,18z) or Embed code"
                 className="w-full"
               />
             </div>
           </div>
 
           <div className="flex gap-3 justify-end pt-6">
-            <Button variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
             <Button type="submit" className="bg-primary hover:bg-primary/90 text-white">

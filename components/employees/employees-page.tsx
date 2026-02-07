@@ -1,143 +1,111 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import EmployeesTable from "./employees-table"
 import EmployeeModal from "./employee-modal"
+import ConfirmModal from "@/components/ui/confirm-modal"
 import { Plus, Search } from "lucide-react"
-
-const SAMPLE_EMPLOYEES = [
-  {
-    id: 1,
-    name: "Rajesh Kumar",
-    code: "EMP001",
-    contact: "9876543210",
-    altContact: "9876543211",
-    address: "Bangalore, Karnataka",
-    photo: "/employee-photo.jpg",
-  },
-  {
-    id: 2,
-    name: "Priya Singh",
-    code: "EMP002",
-    contact: "9876543211",
-    altContact: "9876543212",
-    address: "Mumbai, Maharashtra",
-    photo: "/employee-photo.jpg",
-  },
-  {
-    id: 3,
-    name: "Amit Patel",
-    code: "EMP003",
-    contact: "9876543212",
-    altContact: "9876543213",
-    address: "Pune, Maharashtra",
-    photo: "/employee-photo.jpg",
-  },
-  {
-    id: 4,
-    name: "Anjali Sharma",
-    code: "EMP004",
-    contact: "8765432109",
-    altContact: "8765432110",
-    address: "Hyderabad, Telangana",
-    photo: "/employee-photo.jpg",
-  },
-  {
-    id: 5,
-    name: "Vikram Reddy",
-    code: "EMP005",
-    contact: "7654321098",
-    altContact: "7654321099",
-    address: "Chennai, Tamil Nadu",
-    photo: "/employee-photo.jpg",
-  },
-  {
-    id: 6,
-    name: "Deepika Verma",
-    code: "EMP006",
-    contact: "6543210987",
-    altContact: "6543210988",
-    address: "Delhi, India",
-    photo: "/employee-photo.jpg",
-  },
-  {
-    id: 7,
-    name: "Suresh Kumar",
-    code: "EMP007",
-    contact: "5432109876",
-    altContact: "5432109877",
-    address: "Kolkata, West Bengal",
-    photo: "/employee-photo.jpg",
-  },
-  {
-    id: 8,
-    name: "Neha Gupta",
-    code: "EMP008",
-    contact: "4321098765",
-    altContact: "4321098766",
-    address: "Jaipur, Rajasthan",
-    photo: "/employee-photo.jpg",
-  },
-  {
-    id: 9,
-    name: "Arjun Singh",
-    code: "EMP009",
-    contact: "3210987654",
-    altContact: "3210987655",
-    address: "Lucknow, Uttar Pradesh",
-    photo: "/employee-photo.jpg",
-  },
-  {
-    id: 10,
-    name: "Meera Iyer",
-    code: "EMP010",
-    contact: "2109876543",
-    altContact: "2109876544",
-    address: "Kochi, Kerala",
-    photo: "/employee-photo.jpg",
-  },
-]
+import { employeesApi } from "@/lib/api"
+import { useToast } from "@/hooks/use-toast"
 
 export default function EmployeesPage() {
-  const [employees, setEmployees] = useState(SAMPLE_EMPLOYEES)
+  const [employees, setEmployees] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
 
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedEmployee, setSelectedEmployee] = useState<(typeof employees)[0] | null>(null)
-  const [editingId, setEditingId] = useState<number | null>(null)
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+  const [selectedEmployee, setSelectedEmployee] = useState<any | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const { toast } = useToast()
 
-  const handleAddEmployee = (data: any) => {
-    if (editingId) {
-      setEmployees(employees.map((e) => (e.id === editingId ? { ...data, id: editingId } : e)))
-      setEditingId(null)
-    } else {
-      setEmployees([...employees, { ...data, id: Date.now() }])
+  const fetchEmployees = async () => {
+    try {
+      setLoading(true)
+      const response = await employeesApi.getAll()
+      const data = (response.data || []).map((item: any) => ({
+        ...item,
+        id: item.id || item._id
+      }))
+      setEmployees(data)
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to fetch employees",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
     }
-    setIsModalOpen(false)
   }
 
-  const handleEdit = (employee: (typeof employees)[0]) => {
+  useEffect(() => {
+    fetchEmployees()
+  }, [])
+
+  const handleAddEmployee = async (data: any) => {
+    try {
+      if (editingId) {
+        await employeesApi.update(editingId, data)
+        toast({ title: "Success", description: "Employee updated successfully" })
+      } else {
+        await employeesApi.create(data)
+        toast({ title: "Success", description: "Employee added successfully" })
+      }
+      fetchEmployees()
+      setIsModalOpen(false)
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Operation failed",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleEdit = (employee: any) => {
     setSelectedEmployee(employee)
     setEditingId(employee.id)
     setIsModalOpen(true)
   }
 
-  const handleDelete = (id: number) => {
-    setEmployees(employees.filter((e) => e.id !== id))
+  const handleDelete = async (id: string) => {
+    setEditingId(id)
+    setIsConfirmOpen(true)
   }
 
-  const filteredEmployees = employees.filter(
-    (employee) =>
-      employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.contact.includes(searchTerm) ||
-      employee.address.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const confirmDelete = async () => {
+    if (!editingId) return
+    try {
+      await employeesApi.delete(editingId)
+      toast({ title: "Success", description: "Employee deleted successfully" })
+      fetchEmployees()
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete employee",
+        variant: "destructive",
+      })
+    } finally {
+      setIsConfirmOpen(false)
+      setEditingId(null)
+    }
+  }
+
+  const filteredEmployees = employees.filter((employee) => {
+    const s = searchTerm.toLowerCase()
+    return (
+      (employee.name?.toLowerCase() || "").includes(s) ||
+      (employee.code?.toLowerCase() || "").includes(s) ||
+      (employee.contact || "").includes(searchTerm) ||
+      (employee.address?.toLowerCase() || "").includes(s)
+    )
+  })
 
   return (
-    <div className="p-4 md:p-8 bg-gradient-to-br from-background to-background/95 w-full">
+    <div className="p-4 md:p-8 bg-linear-to-br from-background to-background/95 w-full">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 md:mb-8 gap-4">
         <h1 className="text-2xl md:text-4xl font-bold text-foreground">Employees Management</h1>
         <Button
@@ -162,7 +130,11 @@ export default function EmployeesPage() {
         />
       </div>
 
-      <EmployeesTable employees={filteredEmployees} onEdit={handleEdit} onDelete={handleDelete} />
+      {loading ? (
+        <div className="flex justify-center py-12 text-muted-foreground">Loading employees...</div>
+      ) : (
+        <EmployeesTable employees={filteredEmployees} onEdit={handleEdit} onDelete={handleDelete as any} />
+      )}
 
       <EmployeeModal
         isOpen={isModalOpen}
@@ -173,6 +145,15 @@ export default function EmployeesPage() {
         }}
         onSubmit={handleAddEmployee}
         employee={selectedEmployee}
+        existingEmployees={employees}
+      />
+
+      <ConfirmModal
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={confirmDelete}
+        title="Delete Employee"
+        message="Are you sure you want to delete this employee? This action cannot be undone."
       />
     </div>
   )

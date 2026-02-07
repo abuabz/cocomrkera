@@ -30,6 +30,9 @@ export const metadata: Metadata = {
   },
 }
 
+import { Toaster } from "@/components/ui/toaster"
+import ErrorToastListener from "@/components/ui/error-toast-listener"
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -39,6 +42,8 @@ export default function RootLayout({
     <html lang="en">
       <body className={`font-sans antialiased`}>
         {children}
+        <Toaster />
+        <ErrorToastListener />
         <Analytics />
       </body>
     </html>

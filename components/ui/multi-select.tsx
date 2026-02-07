@@ -3,11 +3,15 @@
 import * as React from "react"
 import { ChevronDown, X } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+
+interface Option {
+  label: string
+  value: string
+}
 
 interface MultiSelectProps {
-  options: string[]
-  selected: string[]
+  options: Option[]
+  selected: string[] // Array of values
   onSelectedChange: (selected: string[]) => void
   placeholder?: string
   className?: string
@@ -22,16 +26,21 @@ export function MultiSelect({
 }: MultiSelectProps) {
   const [open, setOpen] = React.useState(false)
 
-  const handleToggle = (option: string) => {
-    if (selected.includes(option)) {
-      onSelectedChange(selected.filter((item) => item !== option))
+  const handleToggle = (value: string) => {
+    if (selected.includes(value)) {
+      onSelectedChange(selected.filter((item) => item !== value))
     } else {
-      onSelectedChange([...selected, option])
+      onSelectedChange([...selected, value])
     }
   }
 
-  const handleRemove = (option: string) => {
-    onSelectedChange(selected.filter((item) => item !== option))
+  const handleRemove = (value: string) => {
+    onSelectedChange(selected.filter((item) => item !== value))
+  }
+
+  const getLabel = (value: any) => {
+    if (typeof value !== "string") return "Unknown"
+    return options.find((opt) => opt.value === value)?.label || value
   }
 
   return (
@@ -42,16 +51,16 @@ export function MultiSelect({
       >
         <div className="flex flex-wrap gap-2 flex-1">
           {selected.length > 0 ? (
-            selected.map((item) => (
+            selected.map((val, index) => (
               <div
-                key={item}
+                key={typeof val === "string" ? val : `item-${index}`}
                 className="flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded text-sm"
               >
-                <span>{item}</span>
+                <span>{getLabel(val)}</span>
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
-                    handleRemove(item)
+                    handleRemove(val)
                   }}
                   className="hover:bg-primary/20 rounded p-0.5"
                 >
@@ -78,16 +87,16 @@ export function MultiSelect({
             <div className="max-h-64 overflow-y-auto">
               {options.map((option) => (
                 <label
-                  key={option}
+                  key={option.value}
                   className="flex items-center gap-3 px-4 py-2 hover:bg-primary/5 cursor-pointer border-b border-border last:border-b-0"
                 >
                   <input
                     type="checkbox"
-                    checked={selected.includes(option)}
-                    onChange={() => handleToggle(option)}
+                    checked={selected.includes(option.value)}
+                    onChange={() => handleToggle(option.value)}
                     className="w-4 h-4 accent-primary"
                   />
-                  <span className="text-sm text-foreground flex-1">{option}</span>
+                  <span className="text-sm text-foreground flex-1">{option.label}</span>
                 </label>
               ))}
             </div>
