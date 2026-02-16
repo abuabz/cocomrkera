@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test-backend": "node test-backend.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

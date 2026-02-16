@@ -1,0 +1,10 @@
+{
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://cocomrkerabackend.onrender.com"
+  },
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_API_URL": "https://cocomrkerabackend.onrender.com"
+    }
+  }
+}
