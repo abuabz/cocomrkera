@@ -1,19 +1,28 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 export const apiCall = async (endpoint: string, options: RequestInit = {}) => {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers,
-        },
-    });
+    try {
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers,
+            },
+        });
 
-    const data = await response.json();
-    if (!response.ok) {
-        throw new Error(data.message || 'Something went wrong');
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(data.message || `Server responded with ${response.status}: ${response.statusText}`);
+        }
+        return data;
+    } catch (error: any) {
+        console.error(`API Call failed: ${endpoint}`, error);
+        if (error.message === 'Failed to fetch') {
+            throw new Error('Connection failed. Please check if the backend is running on port 5000.');
+        }
+        throw error;
     }
-    return data;
 };
 
 export const customersApi = {

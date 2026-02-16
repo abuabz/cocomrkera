@@ -4,7 +4,15 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { X } from "lucide-react"
+import { X, AlertCircle } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 interface Employee {
   id: string
@@ -41,6 +49,8 @@ export default function EmployeeModal({
   })
 
   const [photoPreview, setPhotoPreview] = useState("/employee-photo.jpg")
+  const [showErrorDialog, setShowErrorDialog] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
 
   useEffect(() => {
     if (employee) {
@@ -98,7 +108,8 @@ export default function EmployeeModal({
     )
 
     if (isDuplicate) {
-      alert("Error: An employee with this name already exists. Please use a unique name.")
+      setErrorMessage("An employee with this name already exists. Please use a unique name.")
+      setShowErrorDialog(true)
       return
     }
 
@@ -108,8 +119,8 @@ export default function EmployeeModal({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-card rounded-lg shadow-xl border border-border max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+      <div className="bg-card rounded-lg shadow-xl border border-border max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between p-6 border-b border-border sticky top-0 bg-card">
           <h2 className="text-2xl font-bold text-card-foreground">{employee ? "Edit Employee" : "Add New Employee"}</h2>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
@@ -210,6 +221,30 @@ export default function EmployeeModal({
           </div>
         </form>
       </div>
+
+      <Dialog open={showErrorDialog} onOpenChange={setShowErrorDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertCircle className="h-5 w-5" />
+              Duplicate Name Error
+            </DialogTitle>
+            <DialogDescription className="py-2">
+              {errorMessage}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="destructive"
+              className="w-full sm:w-auto"
+              onClick={() => setShowErrorDialog(false)}
+            >
+              Understand
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { Mail, Lock, AlertCircle } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
 
 interface LoginPageProps {
   onLogin: () => void
@@ -12,8 +13,8 @@ interface LoginPageProps {
 export default function LoginPage({ onLogin }: LoginPageProps) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const { toast } = useToast()
 
   // Valid credentials
   const VALID_EMAIL = "contact.mrkera@gmail.com"
@@ -21,22 +22,29 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    setError("")
     setIsLoading(true)
 
     // Simulate API delay
     setTimeout(() => {
       if (email === VALID_EMAIL && password === VALID_PASSWORD) {
         onLogin()
+        toast({
+          title: "Sign-in Successful",
+          description: "Welcome back to CocoMgmt!",
+        })
       } else {
-        setError("Invalid email or password. Please try again.")
+        toast({
+          title: "Sign-in Failed",
+          description: "Invalid email or password. Please try again.",
+          variant: "destructive",
+        })
       }
       setIsLoading(false)
     }, 500)
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary/10 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-background to-secondary/10 px-4">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
@@ -92,13 +100,6 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
               </div>
             </div>
 
-            {/* Error Message */}
-            {error && (
-              <div className="flex gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-red-600">{error}</p>
-              </div>
-            )}
 
             {/* Submit Button */}
             <button

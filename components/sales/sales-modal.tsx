@@ -113,8 +113,8 @@ export default function SalesModal({ isOpen, onClose, onSubmit, sale }: SalesMod
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-card rounded-lg shadow-xl border border-border max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+      <div className="bg-card rounded-lg shadow-xl border border-border max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between p-6 border-b border-border sticky top-0 bg-card">
           <h2 className="text-2xl font-bold text-card-foreground">{sale ? "Edit Sales" : "Add New Sales"}</h2>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground">

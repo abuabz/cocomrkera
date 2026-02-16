@@ -67,8 +67,8 @@ export default function OrderModal({ isOpen, onClose, onSubmit, order }: OrderMo
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-card rounded-lg shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+      <div className="bg-card rounded-lg shadow-xl border border-border w-full max-w-md max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between p-6 border-b border-border sticky top-0 bg-card">
           <h2 className="text-2xl font-bold text-foreground">{order ? "Edit Order" : "Add New Order"}</h2>
           <button
