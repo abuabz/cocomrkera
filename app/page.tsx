@@ -7,6 +7,7 @@ import Dashboard from "@/components/dashboard/dashboard"
 import CustomersPage from "@/components/customers/customers-page"
 import EmployeesPage from "@/components/employees/employees-page"
 import SalesPage from "@/components/sales/sales-page"
+import SalaryPage from "@/components/salary/salary-page"
 import OrdersPage from "@/components/orders/orders-page"
 import FollowupPage from "@/components/followup/followup-page"
 import ReportsPage from "@/components/reports/reports-page"
@@ -71,6 +72,8 @@ export default function Home() {
         return <EmployeesPage />
       case "sales":
         return <SalesPage />
+      case "salary":
+        return <SalaryPage />
       case "orders":
         return <OrdersPage />
       case "followup":
@@ -104,9 +107,8 @@ export default function Home() {
       )}
       {isMobile && (
         <div
-          className={`fixed top-0 left-0 h-full bg-sidebar z-50 transition-transform duration-300 w-64 md:hidden ${
-            sidebarOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
+          className={`fixed top-0 left-0 h-full bg-sidebar z-50 transition-transform duration-300 w-64 md:hidden ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+            }`}
         >
           <Sidebar
             activePage={activePage}

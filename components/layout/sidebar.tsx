@@ -1,6 +1,6 @@
 "use client"
 
-import { Users, UserCheck, ShoppingCart, FileText, Home, LogOut, ChevronLeft, ChevronRight, Layers, Phone } from "lucide-react"
+import { Users, UserCheck, ShoppingCart, FileText, Home, LogOut, ChevronLeft, ChevronRight, Layers, Phone, Banknote } from "lucide-react"
 
 interface SidebarProps {
   activePage: string
@@ -28,6 +28,7 @@ export default function Sidebar({
     { id: "customers", label: "Customers", icon: Users },
     { id: "employees", label: "Employees", icon: UserCheck },
     { id: "sales", label: "Sales", icon: ShoppingCart },
+    { id: "salary", label: "Salary", icon: Banknote },
     { id: "orders", label: "Orders", icon: Layers },
     { id: "followup", label: "Followup", icon: Phone },
     { id: "reports", label: "Reports", icon: FileText },
@@ -79,14 +80,13 @@ export default function Sidebar({
             <button
               key={item.id}
               onClick={() => handleMenuClick(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                isActive
-                  ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent/30"
-              }`}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
+                ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                : "text-sidebar-foreground hover:bg-sidebar-accent/30"
+                }`}
               title={isCollapsed ? item.label : ""}
             >
-              <Icon size={20} className="flex-shrink-0" />
+              <Icon size={20} className="shrink-0" />
               {!isCollapsed && <span className="font-medium">{item.label}</span>}
             </button>
           )
@@ -99,7 +99,7 @@ export default function Sidebar({
           className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sidebar-foreground hover:bg-red-600/20 transition-colors"
           title={isCollapsed ? "Logout" : ""}
         >
-          <LogOut size={20} className="flex-shrink-0" />
+          <LogOut size={20} className="shrink-0" />
           {!isCollapsed && <span className="font-medium">Logout</span>}
         </button>
       </div>

@@ -13,7 +13,7 @@ export const parseDDMMYYYY = (dateString: string): Date => {
 
 export const isDateInRange = (date: string, startDate: string, endDate: string): boolean => {
   const checkDate = new Date(date).getTime()
-  const start = new Date(startDate).getTime()
-  const end = new Date(endDate).getTime()
+  const start = new Date(startDate).setHours(0, 0, 0, 0)
+  const end = new Date(endDate).setHours(23, 59, 59, 999)
   return checkDate >= start && checkDate <= end
 }

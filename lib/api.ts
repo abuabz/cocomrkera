@@ -111,3 +111,11 @@ export const statsApi = {
         return apiCall(url)
     },
 };
+
+export const salariesApi = {
+    getAll: () => apiCall('/salaries'),
+    getOne: (id: string) => apiCall(`/salaries/${id}`),
+    create: (data: any) => apiCall('/salaries', { method: 'POST', body: JSON.stringify(data) }),
+    update: (id: string, data: any) => apiCall(`/salaries/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    delete: (id: string) => apiCall(`/salaries/${id}`, { method: 'DELETE' }),
+};
