@@ -43,6 +43,7 @@ export default function CustomersTable({ customers, onEdit, onDelete }: Customer
         <table className="w-full">
           <thead className="bg-primary/10 border-b border-border">
             <tr>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-foreground w-12">No.</th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Name</th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Code</th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Phone</th>
@@ -54,8 +55,9 @@ export default function CustomersTable({ customers, onEdit, onDelete }: Customer
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {customers.map((customer) => (
+            {customers.map((customer, index) => (
               <tr key={customer.id} className="hover:bg-primary/5 transition-colors">
+                <td className="px-6 py-4 text-xs font-bold text-muted-foreground">{index + 1}</td>
                 <td className="px-6 py-4 text-sm text-card-foreground font-medium">{customer.name}</td>
                 <td className="px-6 py-4 text-sm text-muted-foreground">{customer.code}</td>
                 <td className="px-6 py-4 text-sm text-muted-foreground">{customer.phone}</td>

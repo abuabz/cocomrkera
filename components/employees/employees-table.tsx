@@ -26,6 +26,7 @@ export default function EmployeesTable({ employees, onEdit, onDelete }: Employee
         <table className="w-full">
           <thead className="bg-primary/10 border-b border-border">
             <tr>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-foreground w-12">No.</th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Photo</th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Name</th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Code</th>
@@ -35,8 +36,9 @@ export default function EmployeesTable({ employees, onEdit, onDelete }: Employee
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {employees.map((employee) => (
+            {employees.map((employee, index) => (
               <tr key={employee.id} className="hover:bg-primary/5 transition-colors">
+                <td className="px-6 py-4 text-xs font-bold text-muted-foreground">{index + 1}</td>
                 <td className="px-6 py-4">
                   <div className="relative w-10 h-10 rounded-full overflow-hidden bg-muted">
                     <img

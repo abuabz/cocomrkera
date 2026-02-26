@@ -110,6 +110,16 @@ export const statsApi = {
         }
         return apiCall(url)
     },
+    getEmployeeReports: (from?: string, to?: string) => {
+        let url = '/stats/employee-reports'
+        if (from || to) {
+            const params = new URLSearchParams()
+            if (from) params.append('from', from)
+            if (to) params.append('to', to)
+            url += `?${params.toString()}`
+        }
+        return apiCall(url)
+    },
 };
 
 export const salariesApi = {

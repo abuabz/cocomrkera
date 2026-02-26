@@ -29,6 +29,7 @@ export default function SalesTable({ sales, onEdit, onDelete }: SalesTableProps)
         <table className="w-full">
           <thead className="bg-primary/10 border-b border-border">
             <tr>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-foreground w-12">No.</th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Customer</th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Employees</th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Date</th>
@@ -40,8 +41,9 @@ export default function SalesTable({ sales, onEdit, onDelete }: SalesTableProps)
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {sales.map((sale: any) => (
+            {sales.map((sale: any, index: number) => (
               <tr key={sale.id} className="hover:bg-primary/5 transition-colors">
+                <td className="px-6 py-4 text-xs font-bold text-muted-foreground">{index + 1}</td>
                 <td className="px-6 py-4 text-sm font-medium text-foreground">{sale.customerName}</td>
                 <td className="px-6 py-4 text-sm text-muted-foreground">{sale.employeeNames.join(", ")}</td>
                 <td className="px-6 py-4 text-sm text-muted-foreground">{formatDateDDMMYYYY(sale.date)}</td>
@@ -76,6 +78,17 @@ export default function SalesTable({ sales, onEdit, onDelete }: SalesTableProps)
               </tr>
             ))}
           </tbody>
+          {sales.length > 0 && (
+            <tfoot className="bg-muted/50 border-t border-border font-black">
+              <tr>
+                <td colSpan={4} className="px-6 py-4 text-sm uppercase tracking-widest text-primary/50">Calculated Totals</td>
+                <td className="px-6 py-4 text-sm text-foreground">{sales.reduce((acc, sale) => acc + (sale.totalTrees || 0), 0).toLocaleString()}</td>
+                <td className="px-6 py-4"></td>
+                <td className="px-6 py-4 text-sm text-secondary">₹{sales.reduce((acc, sale) => acc + (sale.totalAmount || 0), 0).toLocaleString()}</td>
+                <td colSpan={2}></td>
+              </tr>
+            </tfoot>
+          )}
         </table>
       </div>
       {sales.length === 0 && (

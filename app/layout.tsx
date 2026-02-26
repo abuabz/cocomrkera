@@ -8,7 +8,7 @@ const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Coconut Plucking Business Management System",
+  title: "MR. KERA | Management System",
   description: "Admin dashboard for coconut plucking business management",
   generator: "v0.app",
   icons: {

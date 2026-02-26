@@ -30,7 +30,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
         onLogin()
         toast({
           title: "Sign-in Successful",
-          description: "Welcome back to CocoMgmt!",
+          description: "Welcome back to MR. KERA!",
         })
       } else {
         toast({
@@ -44,17 +44,15 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-background to-secondary/10 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">🥥</span>
-            </div>
-            <h1 className="text-2xl font-bold text-primary">CocoMgmt</h1>
+          <div className="flex flex-col items-center justify-center gap-3 mb-6">
+            <img src="/Mr.kera icon.png" alt="MR. KERA Logo" className="w-20 h-20 object-contain drop-shadow-md" />
+            <h1 className="text-3xl font-black text-primary tracking-tighter">MR. KERA</h1>
           </div>
-          <p className="text-foreground/60">Coconut Plucking Business Management System</p>
+          <p className="text-foreground/60 font-medium">Coconut Plucking Business Management System</p>
         </div>
 
         {/* Login Card */}

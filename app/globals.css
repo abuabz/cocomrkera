@@ -5,7 +5,7 @@
 
 :root {
   /* Updated to brand colors: Primary #142616 (dark green), Secondary #6F2D00 (brown) */
-  --background: oklch(1 0 0);
+  --background: #fdfcf9;
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);

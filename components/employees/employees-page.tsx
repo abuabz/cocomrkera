@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import EmployeesTable from "./employees-table"
 import EmployeeModal from "./employee-modal"
 import ConfirmModal from "@/components/ui/confirm-modal"
+import { TableSkeletonLoader } from "@/components/ui/page-loader"
 import { Plus, Search } from "lucide-react"
 import { employeesApi } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
@@ -105,56 +106,61 @@ export default function EmployeesPage() {
   })
 
   return (
-    <div className="p-4 md:p-8 bg-linear-to-br from-background to-background/95 w-full">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 md:mb-8 gap-4">
-        <h1 className="text-2xl md:text-4xl font-bold text-foreground">Employees Management</h1>
-        <Button
-          onClick={() => {
+    <div className="p-4 md:p-6 bg-background min-h-screen w-full">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 md:mb-8 gap-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-black text-primary tracking-tight">Human Resources</h1>
+            <p className="text-xs md:text-sm text-muted-foreground mt-1 font-bold uppercase tracking-widest opacity-60">Worker Directory & Lifecycle</p>
+          </div>
+          <Button
+            onClick={() => {
+              setSelectedEmployee(null)
+              setEditingId(null)
+              setIsModalOpen(true)
+            }}
+            className="bg-primary hover:bg-primary/90 text-white gap-2 w-full sm:w-auto font-black shadow-xl shadow-primary/20 h-12 px-6"
+          >
+            <Plus size={20} /> Add Employee
+          </Button>
+        </div>
+
+        <div className="mb-10 flex items-center gap-3 bg-white rounded-2xl border border-primary/5 px-6 py-4 shadow-lg">
+          <Search size={22} className="text-primary/30" />
+          <input
+            placeholder="Filter by name, worker code, or contact details..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full border-0 bg-transparent focus:outline-none focus:ring-0 font-black text-primary placeholder:text-primary/20 text-lg"
+          />
+        </div>
+
+        {loading ? (
+          <TableSkeletonLoader />
+        ) : (
+          <EmployeesTable employees={filteredEmployees} onEdit={handleEdit} onDelete={handleDelete as any} />
+        )}
+
+        <EmployeeModal
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false)
             setSelectedEmployee(null)
             setEditingId(null)
-            setIsModalOpen(true)
           }}
-          className="bg-primary hover:bg-primary/90 text-white gap-2 w-full sm:w-auto"
-        >
-          <Plus size={20} /> Add Employee
-        </Button>
-      </div>
+          onSubmit={handleAddEmployee}
+          employee={selectedEmployee}
+          existingEmployees={employees}
+        />
 
-      <div className="mb-6 flex items-center gap-2 bg-card rounded-lg border border-border px-4 py-3">
-        <Search size={20} className="text-muted-foreground" />
-        <Input
-          placeholder="Search by name, code, contact, or address..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="border-0 bg-transparent focus:outline-none focus-visible:ring-0"
+        <ConfirmModal
+          isOpen={isConfirmOpen}
+          onClose={() => setIsConfirmOpen(false)}
+          onConfirm={confirmDelete}
+          title="Delete Employee"
+          message="Are you sure you want to delete this employee? This action cannot be undone."
         />
       </div>
-
-      {loading ? (
-        <div className="flex justify-center py-12 text-muted-foreground">Loading employees...</div>
-      ) : (
-        <EmployeesTable employees={filteredEmployees} onEdit={handleEdit} onDelete={handleDelete as any} />
-      )}
-
-      <EmployeeModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false)
-          setSelectedEmployee(null)
-          setEditingId(null)
-        }}
-        onSubmit={handleAddEmployee}
-        employee={selectedEmployee}
-        existingEmployees={employees}
-      />
-
-      <ConfirmModal
-        isOpen={isConfirmOpen}
-        onClose={() => setIsConfirmOpen(false)}
-        onConfirm={confirmDelete}
-        title="Delete Employee"
-        message="Are you sure you want to delete this employee? This action cannot be undone."
-      />
     </div>
   )
 }

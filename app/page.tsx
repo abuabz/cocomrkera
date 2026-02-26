@@ -11,6 +11,7 @@ import SalaryPage from "@/components/salary/salary-page"
 import OrdersPage from "@/components/orders/orders-page"
 import FollowupPage from "@/components/followup/followup-page"
 import ReportsPage from "@/components/reports/reports-page"
+import EmployeeReports from "@/components/reports/employee-reports"
 import { Menu, X } from "lucide-react"
 
 export default function Home() {
@@ -50,9 +51,16 @@ export default function Home() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen bg-background text-foreground">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p>Loading...</p>
+        <div className="text-center flex flex-col items-center gap-6">
+          <div className="relative flex justify-center items-center w-24 h-24">
+            <div className="absolute inset-0 border-4 border-primary/20 rounded-full"></div>
+            <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <img src="/Mr.kera icon.png" alt="Loading" className="w-12 h-12 object-contain animate-pulse" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl font-black text-primary tracking-widest uppercase">MR. KERA</h2>
+            <p className="text-xs font-bold text-muted-foreground tracking-[0.2em] uppercase animate-pulse">Initializing System...</p>
+          </div>
         </div>
       </div>
     )
@@ -80,6 +88,8 @@ export default function Home() {
         return <FollowupPage />
       case "reports":
         return <ReportsPage />
+      case "employee-reports":
+        return <EmployeeReports />
       default:
         return <Dashboard />
     }
@@ -124,7 +134,10 @@ export default function Home() {
       <main className="flex-1 flex flex-col overflow-hidden w-full">
         {isMobile && (
           <div className="bg-sidebar text-sidebar-foreground shadow-md p-4 flex items-center justify-between md:hidden">
-            <h1 className="text-xl font-bold">CPBMS</h1>
+            <div className="flex items-center gap-2">
+              <img src="/Mr.kera icon.png" alt="Logo" className="w-8 h-8 object-contain" />
+              <h1 className="text-xl font-black tracking-tight">MR. KERA</h1>
+            </div>
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="p-2 hover:bg-sidebar-accent/30 rounded-lg transition-colors"

@@ -26,6 +26,7 @@ export default function OrdersTable({ orders, onEdit, onDelete }: OrdersTablePro
         <table className="w-full">
           <thead className="bg-primary/10 border-b border-border">
             <tr>
+              <th className="px-4 md:px-6 py-4 text-left text-sm font-semibold text-foreground w-12">No.</th>
               <th className="px-4 md:px-6 py-4 text-left text-sm font-semibold text-foreground">Name</th>
               <th className="px-4 md:px-6 py-4 text-left text-sm font-semibold text-foreground">Phone Number</th>
               <th className="px-4 md:px-6 py-4 text-left text-sm font-semibold text-foreground">Place</th>
@@ -35,8 +36,9 @@ export default function OrdersTable({ orders, onEdit, onDelete }: OrdersTablePro
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {orders.map((order) => (
+            {orders.map((order, index) => (
               <tr key={order.id} className="hover:bg-primary/5 transition-colors">
+                <td className="px-4 md:px-6 py-4 text-xs font-bold text-muted-foreground">{index + 1}</td>
                 <td className="px-4 md:px-6 py-4 text-sm text-card-foreground font-medium">{order.name}</td>
                 <td className="px-4 md:px-6 py-4 text-sm text-muted-foreground">{order.phoneNumber}</td>
                 <td className="px-4 md:px-6 py-4 text-sm text-muted-foreground">{order.place}</td>
