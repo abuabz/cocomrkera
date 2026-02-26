@@ -21,6 +21,11 @@ export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [desktopSidebarCollapsed, setDesktopSidebarCollapsed] = useState(false)
+  const [mountedPages, setMountedPages] = useState<Set<string>>(new Set(["dashboard"]))
+
+  useEffect(() => {
+    setMountedPages((prev) => new Set([...Array.from(prev), activePage]))
+  }, [activePage])
 
   useEffect(() => {
     const storedAuth = localStorage.getItem("isAuthenticated")
@@ -70,29 +75,13 @@ export default function Home() {
     return <LoginPage onLogin={handleLogin} />
   }
 
-  const renderPage = () => {
-    switch (activePage) {
-      case "dashboard":
-        return <Dashboard />
-      case "customers":
-        return <CustomersPage />
-      case "employees":
-        return <EmployeesPage />
-      case "sales":
-        return <SalesPage />
-      case "salary":
-        return <SalaryPage />
-      case "orders":
-        return <OrdersPage />
-      case "followup":
-        return <FollowupPage />
-      case "reports":
-        return <ReportsPage />
-      case "employee-reports":
-        return <EmployeeReports />
-      default:
-        return <Dashboard />
-    }
+  const renderPage = (pageId: string, Component: any) => {
+    if (!mountedPages.has(pageId)) return null
+    return (
+      <div className={activePage === pageId ? "block h-full w-full" : "hidden"}>
+        <Component />
+      </div>
+    )
   }
 
   return (
@@ -147,7 +136,17 @@ export default function Home() {
             </button>
           </div>
         )}
-        <div className="flex-1 overflow-auto">{renderPage()}</div>
+        <div className="flex-1 overflow-auto bg-background relative">
+          {renderPage("dashboard", Dashboard)}
+          {renderPage("customers", CustomersPage)}
+          {renderPage("employees", EmployeesPage)}
+          {renderPage("sales", SalesPage)}
+          {renderPage("salary", SalaryPage)}
+          {renderPage("orders", OrdersPage)}
+          {renderPage("followup", FollowupPage)}
+          {renderPage("reports", ReportsPage)}
+          {renderPage("employee-reports", EmployeeReports)}
+        </div>
       </main>
     </div>
   )
