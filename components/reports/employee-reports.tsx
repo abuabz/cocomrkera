@@ -29,7 +29,7 @@ export default function EmployeeReports() {
 
     const [selectedMonth, setSelectedMonth] = useState(format(new Date(), "yyyy-MM"))
     const [currentPage, setCurrentPage] = useState(1)
-    const itemsPerPage = 8
+    const itemsPerPage = 20
     const { toast } = useToast()
 
     const fetchReports = useCallback(async () => {

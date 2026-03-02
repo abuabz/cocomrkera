@@ -27,7 +27,7 @@ export default function SalaryPage() {
     const [selectedSalary, setSelectedSalary] = useState<any | null>(null)
     const [editingId, setEditingId] = useState<string | null>(null)
     const [currentPage, setCurrentPage] = useState(1)
-    const itemsPerPage = 8
+    const itemsPerPage = 20
     const { toast } = useToast()
 
     const fetchSalaries = async () => {
