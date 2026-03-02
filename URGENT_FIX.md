@@ -18,7 +18,7 @@
 4. Enter these EXACT values:
    ```
    Key:   NEXT_PUBLIC_API_URL
-   Value: https://cocomrkerabackend.onrender.com
+    - **Value**: `https://mrkerabackend.metrotoystore.com`
    ```
 5. Select **ALL environments** (Production, Preview, Development)
 6. Click **"Save"**
@@ -66,7 +66,7 @@ Vercel Dashboard
 │                                                 │
 │ Value                                           │
 │ ┌─────────────────────────────────────────────┐ │
-│ │ https://cocomrkerabackend.onrender.com      │ │
+│ │ https://mrkerabackend.metrotoystore.com      │ │
 │ └─────────────────────────────────────────────┘ │
 │                                                 │
 │ Environments                                    │
@@ -83,7 +83,7 @@ Vercel Dashboard
 ## ⚠️ CRITICAL NOTES
 
 1. **Exact spelling matters**: `NEXT_PUBLIC_API_URL` (not `API_URL` or `NEXT_API_URL`)
-2. **No `/api` at the end**: Use `https://cocomrkerabackend.onrender.com` (NOT `.../api`)
+2. **No `/api` at the end**: Use `https://mrkerabackend.metrotoystore.com` (NOT `.../api`)
 3. **Must redeploy**: Saving the variable is not enough - you MUST redeploy
 4. **Disable cache**: When redeploying, MUST uncheck "Use existing Build Cache"
 
@@ -135,7 +135,7 @@ vercel link
 
 # Add environment variable
 vercel env add NEXT_PUBLIC_API_URL production
-# When prompted, paste: https://cocomrkerabackend.onrender.com
+# When prompted, paste: https://mrkerabackend.metrotoystore.com
 
 # Also add for preview and development
 vercel env add NEXT_PUBLIC_API_URL preview

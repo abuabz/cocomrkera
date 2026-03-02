@@ -6,9 +6,11 @@ interface SalaryTableProps {
     salaries: any[]
     onEdit: (salary: any) => void
     onDelete: (id: string) => void
+    startIndex?: number
+    totalAmount?: number
 }
 
-export default function SalaryTable({ salaries, onEdit, onDelete }: SalaryTableProps) {
+export default function SalaryTable({ salaries, onEdit, onDelete, startIndex = 0, totalAmount }: SalaryTableProps) {
     if (salaries.length === 0) {
         return (
             <div className="bg-card border border-border rounded-xl p-12 text-center text-muted-foreground">
@@ -35,7 +37,7 @@ export default function SalaryTable({ salaries, onEdit, onDelete }: SalaryTableP
                     <tbody className="divide-y divide-border">
                         {salaries.map((salary, index) => (
                             <tr key={salary.id || salary._id} className="hover:bg-muted/30 transition-colors">
-                                <td className="px-6 py-4 text-xs font-bold text-muted-foreground">{index + 1}</td>
+                                <td className="px-6 py-4 text-xs font-bold text-muted-foreground">{startIndex + index + 1}</td>
                                 <td className="px-6 py-4">
                                     <div className="font-medium text-foreground">{salary.employeeName || "Unknown"}</div>
                                     <div className="text-xs text-muted-foreground">{salary.employeeCode}</div>
@@ -79,7 +81,7 @@ export default function SalaryTable({ salaries, onEdit, onDelete }: SalaryTableP
                         <tr className="bg-secondary/5 font-black border-t-2 border-secondary/10">
                             <td colSpan={2} className="px-6 py-6 text-sm uppercase tracking-widest text-primary/50">Total Disbursed</td>
                             <td className="px-6 py-6 text-lg text-secondary">
-                                ₹{salaries.reduce((acc, sale) => acc + (Number(sale.amount) || 0), 0).toLocaleString()}
+                                ₹{(totalAmount !== undefined ? totalAmount : salaries.reduce((acc, sale) => acc + (Number(sale.amount) || 0), 0)).toLocaleString()}
                             </td>
                             <td colSpan={4}></td>
                         </tr>

@@ -11,6 +11,7 @@ import { isDateInRange } from "@/lib/date-utils"
 import { customersApi } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 import { TableSkeletonLoader } from "@/components/ui/page-loader"
+import { CustomPagination } from "@/components/ui/custom-pagination"
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<any[]>([])
@@ -25,6 +26,8 @@ export default function CustomersPage() {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const [selectedCustomer, setSelectedCustomer] = useState<any | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 8
   const { toast } = useToast()
 
   const fetchCustomers = async () => {
@@ -119,6 +122,16 @@ export default function CustomersPage() {
     return true
   })
 
+  // Pagination Logic
+  const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const paginatedCustomers = filteredCustomers.slice(startIndex, startIndex + itemsPerPage)
+
+  // Reset to page 1 when search or filter changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, dateFilter])
+
   return (
     <div className="p-4 md:p-6 bg-background min-h-screen w-full">
       <div className="max-w-7xl mx-auto">
@@ -187,11 +200,19 @@ export default function CustomersPage() {
         {loading ? (
           <TableSkeletonLoader />
         ) : (
-          <CustomersTable
-            customers={filteredCustomers}
-            onEdit={handleEdit}
-            onDelete={handleDelete as any}
-          />
+          <>
+            <CustomersTable
+              customers={paginatedCustomers}
+              onEdit={handleEdit}
+              onDelete={handleDelete as any}
+              startIndex={startIndex}
+            />
+            <CustomPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </>
         )}
 
         <CustomerModal

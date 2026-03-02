@@ -17,9 +17,10 @@ interface FollowupTableProps {
   followups: Followup[]
   onEdit: (followup: Followup) => void
   onDelete: (id: number) => void
+  startIndex?: number
 }
 
-export default function FollowupTable({ followups, onEdit, onDelete }: FollowupTableProps) {
+export default function FollowupTable({ followups, onEdit, onDelete, startIndex = 0 }: FollowupTableProps) {
   return (
     <div className="bg-card rounded-lg shadow-md border border-border overflow-hidden">
       <div className="overflow-x-auto">
@@ -38,7 +39,7 @@ export default function FollowupTable({ followups, onEdit, onDelete }: FollowupT
           <tbody className="divide-y divide-border">
             {followups.map((followup, index) => (
               <tr key={followup.id} className="hover:bg-primary/5 transition-colors">
-                <td className="px-4 md:px-6 py-4 text-xs font-bold text-muted-foreground">{index + 1}</td>
+                <td className="px-4 md:px-6 py-4 text-xs font-bold text-muted-foreground">{startIndex + index + 1}</td>
                 <td className="px-4 md:px-6 py-4 text-sm text-card-foreground font-medium">{followup.name}</td>
                 <td className="px-4 md:px-6 py-4 text-sm text-muted-foreground">{followup.phoneNumber}</td>
                 <td className="px-4 md:px-6 py-4 text-sm text-muted-foreground">{followup.place}</td>
@@ -46,7 +47,7 @@ export default function FollowupTable({ followups, onEdit, onDelete }: FollowupT
                 <td className="px-4 md:px-6 py-4 text-sm text-muted-foreground">
                   {formatDateDDMMYYYY(followup.date)}
                 </td>
-                <td className="px-4 md:px-6 py-4 text-sm">
+                <td className="px-4 md:px-6 py-4 tgoext-sm">
                   <div className="flex items-center gap-2">
                     <Button variant="outline" size="sm" onClick={() => onEdit(followup)} className="gap-1">
                       <Edit size={16} />

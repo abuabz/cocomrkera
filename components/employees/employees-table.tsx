@@ -17,9 +17,10 @@ interface EmployeesTableProps {
   employees: Employee[]
   onEdit: (employee: Employee) => void
   onDelete: (id: string) => void
+  startIndex?: number
 }
 
-export default function EmployeesTable({ employees, onEdit, onDelete }: EmployeesTableProps) {
+export default function EmployeesTable({ employees, onEdit, onDelete, startIndex = 0 }: EmployeesTableProps) {
   return (
     <div className="bg-card rounded-lg shadow-md border border-border overflow-hidden">
       <div className="overflow-x-auto">
@@ -38,7 +39,7 @@ export default function EmployeesTable({ employees, onEdit, onDelete }: Employee
           <tbody className="divide-y divide-border">
             {employees.map((employee, index) => (
               <tr key={employee.id} className="hover:bg-primary/5 transition-colors">
-                <td className="px-6 py-4 text-xs font-bold text-muted-foreground">{index + 1}</td>
+                <td className="px-6 py-4 text-xs font-bold text-muted-foreground">{startIndex + index + 1}</td>
                 <td className="px-6 py-4">
                   <div className="relative w-10 h-10 rounded-full overflow-hidden bg-muted">
                     <img

@@ -10,6 +10,7 @@ import { Plus, Search, Calendar, Banknote, TrendingUp } from "lucide-react"
 import { isDateInRange } from "@/lib/date-utils"
 import { salariesApi, employeesApi } from "@/lib/api"
 import { TableSkeletonLoader } from "@/components/ui/page-loader"
+import { CustomPagination } from "@/components/ui/custom-pagination"
 import { useToast } from "@/hooks/use-toast"
 
 export default function SalaryPage() {
@@ -25,6 +26,8 @@ export default function SalaryPage() {
     const [isConfirmOpen, setIsConfirmOpen] = useState(false)
     const [selectedSalary, setSelectedSalary] = useState<any | null>(null)
     const [editingId, setEditingId] = useState<string | null>(null)
+    const [currentPage, setCurrentPage] = useState(1)
+    const itemsPerPage = 8
     const { toast } = useToast()
 
     const fetchSalaries = async () => {
@@ -117,6 +120,16 @@ export default function SalaryPage() {
 
         return true
     })
+
+    // Pagination Logic
+    const totalPages = Math.ceil(filteredSalaries.length / itemsPerPage)
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const paginatedSalaries = filteredSalaries.slice(startIndex, startIndex + itemsPerPage)
+
+    // Reset to page 1 when search or filter changes
+    useEffect(() => {
+        setCurrentPage(1)
+    }, [searchTerm, dateFilter])
 
     const totalSalary = filteredSalaries.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0)
 
@@ -216,7 +229,20 @@ export default function SalaryPage() {
                 {loading ? (
                     <TableSkeletonLoader />
                 ) : (
-                    <SalaryTable salaries={filteredSalaries} onEdit={handleEdit} onDelete={handleDelete} />
+                    <>
+                        <SalaryTable
+                            salaries={paginatedSalaries}
+                            onEdit={handleEdit}
+                            onDelete={handleDelete}
+                            startIndex={startIndex}
+                            totalAmount={totalSalary}
+                        />
+                        <CustomPagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={setCurrentPage}
+                        />
+                    </>
                 )}
 
                 <SalaryModal

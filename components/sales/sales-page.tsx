@@ -11,6 +11,7 @@ import { isDateInRange } from "@/lib/date-utils"
 import { salesApi } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 import { TableSkeletonLoader } from "@/components/ui/page-loader"
+import { CustomPagination } from "@/components/ui/custom-pagination"
 
 export default function SalesPage() {
   const [sales, setSales] = useState<any[]>([])
@@ -25,6 +26,8 @@ export default function SalesPage() {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const [selectedSale, setSelectedSale] = useState<any | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 8
   const { toast } = useToast()
 
   const fetchSales = async () => {
@@ -120,6 +123,16 @@ export default function SalesPage() {
     return true
   })
 
+  // Pagination Logic
+  const totalPages = Math.ceil(filteredSales.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const paginatedSales = filteredSales.slice(startIndex, startIndex + itemsPerPage)
+
+  // Reset to page 1 when search or filter changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, dateFilter])
+
   return (
     <div className="p-4 md:p-6 bg-background min-h-screen w-full">
       <div className="max-w-7xl mx-auto">
@@ -205,7 +218,21 @@ export default function SalesPage() {
         {loading ? (
           <TableSkeletonLoader />
         ) : (
-          <SalesTable sales={filteredSales} onEdit={handleEdit} onDelete={handleDelete as any} />
+          <>
+            <SalesTable
+              sales={paginatedSales}
+              onEdit={handleEdit}
+              onDelete={handleDelete as any}
+              startIndex={startIndex}
+              totalTrees={filteredSales.reduce((acc, s) => acc + (s.totalTrees || 0), 0)}
+              totalAmount={filteredSales.reduce((acc, s) => acc + (s.totalAmount || 0), 0)}
+            />
+            <CustomPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </>
         )}
 
         <SalesModal

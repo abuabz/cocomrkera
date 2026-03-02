@@ -3,7 +3,7 @@
 
 const https = require('https');
 
-const BACKEND_URL = 'https://cocomrkerabackend.onrender.com';
+const BACKEND_URL = 'https://mrkerabackend.metrotoystore.com';
 
 const testEndpoint = (path) => {
     return new Promise((resolve, reject) => {

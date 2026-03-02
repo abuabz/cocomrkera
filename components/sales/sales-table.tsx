@@ -20,9 +20,19 @@ interface SalesTableProps {
   sales: Sale[]
   onEdit: (sale: Sale) => void
   onDelete: (id: number) => void
+  startIndex?: number
+  totalTrees?: number
+  totalAmount?: number
 }
 
-export default function SalesTable({ sales, onEdit, onDelete }: SalesTableProps) {
+export default function SalesTable({
+  sales,
+  onEdit,
+  onDelete,
+  startIndex = 0,
+  totalTrees,
+  totalAmount
+}: SalesTableProps) {
   return (
     <div className="bg-card rounded-lg shadow-md border border-border overflow-hidden">
       <div className="overflow-x-auto">
@@ -43,7 +53,7 @@ export default function SalesTable({ sales, onEdit, onDelete }: SalesTableProps)
           <tbody className="divide-y divide-border">
             {sales.map((sale: any, index: number) => (
               <tr key={sale.id} className="hover:bg-primary/5 transition-colors">
-                <td className="px-6 py-4 text-xs font-bold text-muted-foreground">{index + 1}</td>
+                <td className="px-6 py-4 text-xs font-bold text-muted-foreground">{startIndex + index + 1}</td>
                 <td className="px-6 py-4 text-sm font-medium text-foreground">{sale.customerName}</td>
                 <td className="px-6 py-4 text-sm text-muted-foreground">{sale.employeeNames.join(", ")}</td>
                 <td className="px-6 py-4 text-sm text-muted-foreground">{formatDateDDMMYYYY(sale.date)}</td>
@@ -82,9 +92,13 @@ export default function SalesTable({ sales, onEdit, onDelete }: SalesTableProps)
             <tfoot className="bg-muted/50 border-t border-border font-black">
               <tr>
                 <td colSpan={4} className="px-6 py-4 text-sm uppercase tracking-widest text-primary/50">Calculated Totals</td>
-                <td className="px-6 py-4 text-sm text-foreground">{sales.reduce((acc, sale) => acc + (sale.totalTrees || 0), 0).toLocaleString()}</td>
+                <td className="px-6 py-4 text-sm text-foreground">
+                  {(totalTrees !== undefined ? totalTrees : sales.reduce((acc, sale) => acc + (sale.totalTrees || 0), 0)).toLocaleString()}
+                </td>
                 <td className="px-6 py-4"></td>
-                <td className="px-6 py-4 text-sm text-secondary">₹{sales.reduce((acc, sale) => acc + (sale.totalAmount || 0), 0).toLocaleString()}</td>
+                <td className="px-6 py-4 text-sm text-secondary">
+                  ₹{(totalAmount !== undefined ? totalAmount : sales.reduce((acc, sale) => acc + (sale.totalAmount || 0), 0)).toLocaleString()}
+                </td>
                 <td colSpan={2}></td>
               </tr>
             </tfoot>

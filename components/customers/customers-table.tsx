@@ -21,9 +21,10 @@ interface CustomersTableProps {
   customers: Customer[]
   onEdit: (customer: Customer) => void
   onDelete: (id: string) => void
+  startIndex?: number
 }
 
-export default function CustomersTable({ customers, onEdit, onDelete }: CustomersTableProps) {
+export default function CustomersTable({ customers, onEdit, onDelete, startIndex = 0 }: CustomersTableProps) {
   const getGoogleMapsUrl = (customer: Customer) => {
     if (customer.mapUrl) {
       // If it's an iframe snippet, extract the URL
@@ -57,7 +58,7 @@ export default function CustomersTable({ customers, onEdit, onDelete }: Customer
           <tbody className="divide-y divide-border">
             {customers.map((customer, index) => (
               <tr key={customer.id} className="hover:bg-primary/5 transition-colors">
-                <td className="px-6 py-4 text-xs font-bold text-muted-foreground">{index + 1}</td>
+                <td className="px-6 py-4 text-xs font-bold text-muted-foreground">{startIndex + index + 1}</td>
                 <td className="px-6 py-4 text-sm text-card-foreground font-medium">{customer.name}</td>
                 <td className="px-6 py-4 text-sm text-muted-foreground">{customer.code}</td>
                 <td className="px-6 py-4 text-sm text-muted-foreground">{customer.phone}</td>

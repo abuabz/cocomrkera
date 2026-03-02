@@ -14,6 +14,7 @@ import { statsApi, employeesApi, salesApi, salariesApi } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 import { format, startOfMonth, endOfMonth, subMonths } from "date-fns"
 import { TableSkeletonLoader } from "@/components/ui/page-loader"
+import { CustomPagination } from "@/components/ui/custom-pagination"
 
 export default function EmployeeReports() {
     const [data, setData] = useState<any[]>([])
@@ -27,6 +28,8 @@ export default function EmployeeReports() {
     })
 
     const [selectedMonth, setSelectedMonth] = useState(format(new Date(), "yyyy-MM"))
+    const [currentPage, setCurrentPage] = useState(1)
+    const itemsPerPage = 8
     const { toast } = useToast()
 
     const fetchReports = useCallback(async () => {
@@ -152,6 +155,16 @@ export default function EmployeeReports() {
         }),
         { sales: 0, salary: 0, profit: 0, trees: 0 }
     )
+
+    // Pagination Logic
+    const totalPages = Math.ceil(reportList.length / itemsPerPage)
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const paginatedReports = reportList.slice(startIndex, startIndex + itemsPerPage)
+
+    // Reset to page 1 when data changes (filter changes)
+    useEffect(() => {
+        setCurrentPage(1)
+    }, [data])
 
 
     return (
@@ -321,9 +334,9 @@ export default function EmployeeReports() {
                                                     </TableCell>
                                                 </TableRow>
                                             ) : (
-                                                reportList.map((row, index) => (
+                                                paginatedReports.map((row, index) => (
                                                     <TableRow key={row.id} className="hover:bg-muted/10 transition-colors">
-                                                        <TableCell className="px-6 py-4 text-sm text-muted-foreground">{index + 1}</TableCell>
+                                                        <TableCell className="px-6 py-4 text-sm text-muted-foreground">{startIndex + index + 1}</TableCell>
                                                         <TableCell className="px-6 py-4">
                                                             <div className="flex flex-col">
                                                                 <span className="font-medium text-base text-foreground">{row.name}</span>
@@ -368,6 +381,14 @@ export default function EmployeeReports() {
                                 </div>
                             </CardContent>
                         </Card>
+
+                        <div className="mb-8">
+                            <CustomPagination
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={setCurrentPage}
+                            />
+                        </div>
 
                         {/* Report Footer Information */}
                         <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-medium text-muted-foreground mb-8">

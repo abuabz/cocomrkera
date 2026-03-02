@@ -7,6 +7,7 @@ import EmployeesTable from "./employees-table"
 import EmployeeModal from "./employee-modal"
 import ConfirmModal from "@/components/ui/confirm-modal"
 import { TableSkeletonLoader } from "@/components/ui/page-loader"
+import { CustomPagination } from "@/components/ui/custom-pagination"
 import { Plus, Search } from "lucide-react"
 import { employeesApi } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
@@ -20,6 +21,8 @@ export default function EmployeesPage() {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const [selectedEmployee, setSelectedEmployee] = useState<any | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 8
   const { toast } = useToast()
 
   const fetchEmployees = async () => {
@@ -105,6 +108,16 @@ export default function EmployeesPage() {
     )
   })
 
+  // Pagination Logic
+  const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const paginatedEmployees = filteredEmployees.slice(startIndex, startIndex + itemsPerPage)
+
+  // Reset to page 1 when search changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm])
+
   return (
     <div className="p-4 md:p-6 bg-background min-h-screen w-full">
       <div className="max-w-7xl mx-auto">
@@ -138,7 +151,19 @@ export default function EmployeesPage() {
         {loading ? (
           <TableSkeletonLoader />
         ) : (
-          <EmployeesTable employees={filteredEmployees} onEdit={handleEdit} onDelete={handleDelete as any} />
+          <>
+            <EmployeesTable
+              employees={paginatedEmployees}
+              onEdit={handleEdit}
+              onDelete={handleDelete as any}
+              startIndex={startIndex}
+            />
+            <CustomPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </>
         )}
 
         <EmployeeModal

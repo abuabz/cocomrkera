@@ -11,6 +11,7 @@ import { isDateInRange } from "@/lib/date-utils"
 import { followupsApi } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 import { TableSkeletonLoader } from "@/components/ui/page-loader"
+import { CustomPagination } from "@/components/ui/custom-pagination"
 
 export default function FollowupPage() {
   const [followups, setFollowups] = useState<any[]>([])
@@ -25,6 +26,8 @@ export default function FollowupPage() {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const [selectedFollowup, setSelectedFollowup] = useState<any | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 8
   const { toast } = useToast()
 
   const fetchFollowups = async () => {
@@ -116,6 +119,16 @@ export default function FollowupPage() {
     return true
   })
 
+  // Pagination Logic
+  const totalPages = Math.ceil(filteredFollowups.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const paginatedFollowups = filteredFollowups.slice(startIndex, startIndex + itemsPerPage)
+
+  // Reset to page 1 when search or filter changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, dateFilter])
+
   return (
     <div className="p-4 md:p-6 bg-background min-h-screen w-full">
       <div className="max-w-7xl mx-auto">
@@ -182,7 +195,19 @@ export default function FollowupPage() {
         {loading ? (
           <TableSkeletonLoader />
         ) : (
-          <FollowupTable followups={filteredFollowups} onEdit={handleEdit} onDelete={handleDelete as any} />
+          <>
+            <FollowupTable
+              followups={paginatedFollowups}
+              onEdit={handleEdit}
+              onDelete={handleDelete as any}
+              startIndex={startIndex}
+            />
+            <CustomPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </>
         )}
 
         <FollowupModal
