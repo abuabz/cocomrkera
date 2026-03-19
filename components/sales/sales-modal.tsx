@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { MultiSelect } from "@/components/ui/multi-select"
+import { Combobox } from "@/components/ui/combobox"
 import { X } from "lucide-react"
 import { customersApi, employeesApi } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
@@ -108,6 +109,11 @@ export default function SalesModal({ isOpen, onClose, onSubmit, sale }: SalesMod
     value: emp.id || emp._id
   }))
 
+  const customerOptions = customers.map(c => ({
+    label: `${c.name} (${c.code || 'No Code'})`,
+    value: c.id || c._id
+  }))
+
   const getEmployeeName = (id: string) => {
     return employees.find(emp => (emp.id || emp._id) === id)?.name || "Unknown"
   }
@@ -125,20 +131,13 @@ export default function SalesModal({ isOpen, onClose, onSubmit, sale }: SalesMod
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">Customer *</label>
-            <select
-              name="customerId"
+            <Combobox
+              options={customerOptions}
               value={formData.customerId}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 bg-background border border-border rounded-lg text-foreground"
-            >
-              <option value="">Select a customer</option>
-              {customers.map((c) => (
-                <option key={c.id || c._id} value={c.id || c._id}>
-                  {c.name} ({c.code})
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setFormData((prev) => ({ ...prev, customerId: val }))}
+              placeholder="Select a customer"
+              emptyMessage="No customer found"
+            />
           </div>
 
           <div>
