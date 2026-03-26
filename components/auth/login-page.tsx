@@ -108,13 +108,6 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
               {isLoading ? "Signing in..." : "Sign In"}
             </button>
           </form>
-
-          {/* Demo Credentials Info */}
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-xs font-semibold text-blue-900 mb-2">Demo Credentials:</p>
-            <p className="text-xs text-blue-700">Email: contact.mrkera@gmail.com</p>
-            <p className="text-xs text-blue-700">Password: mrkera@8111</p>
-          </div>
         </div>
 
         {/* Footer */}
