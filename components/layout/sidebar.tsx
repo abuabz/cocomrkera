@@ -1,6 +1,6 @@
 "use client"
 
-import { Users, UserCheck, ShoppingCart, FileText, Home, LogOut, ChevronLeft, ChevronRight, Layers, Phone, Banknote, TrendingUp } from "lucide-react"
+import { Users, UserCheck, ShoppingCart, FileText, Home, LogOut, ChevronLeft, ChevronRight, Layers, Phone, Banknote, TrendingUp, Database } from "lucide-react"
 
 interface SidebarProps {
   activePage: string
@@ -33,6 +33,7 @@ export default function Sidebar({
     { id: "followup", label: "Followup", icon: Phone },
     { id: "employee-reports", label: "Work Reports", icon: TrendingUp },
     { id: "reports", label: "Reports", icon: FileText },
+    { id: "backup", label: "Data Management", icon: Database },
   ]
 
   const handleMenuClick = (pageId: string) => {

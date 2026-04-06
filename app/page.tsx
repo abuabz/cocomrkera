@@ -12,6 +12,7 @@ import OrdersPage from "@/components/orders/orders-page"
 import FollowupPage from "@/components/followup/followup-page"
 import ReportsPage from "@/components/reports/reports-page"
 import EmployeeReports from "@/components/reports/employee-reports"
+import DataManagementPage from "@/components/data-management/data-management-page"
 import { Menu, X } from "lucide-react"
 
 export default function Home() {
@@ -146,6 +147,7 @@ export default function Home() {
           {renderPage("followup", FollowupPage)}
           {renderPage("reports", ReportsPage)}
           {renderPage("employee-reports", EmployeeReports)}
+          {renderPage("backup", DataManagementPage)}
         </div>
       </main>
     </div>

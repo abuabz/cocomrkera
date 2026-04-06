@@ -3,7 +3,7 @@ const getApiBaseUrl = () => {
     const envUrl = process.env.NEXT_PUBLIC_API_URL;
 
     // Default to localhost for development
-    const defaultUrl = 'http://localhost:5000';
+    const defaultUrl = 'http://localhost:5005';
 
     // Use environment URL if set, otherwise use default
     let baseUrl = envUrl || defaultUrl;
@@ -128,4 +128,9 @@ export const salariesApi = {
     create: (data: any) => apiCall('/salaries', { method: 'POST', body: JSON.stringify(data) }),
     update: (id: string, data: any) => apiCall(`/salaries/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     delete: (id: string) => apiCall(`/salaries/${id}`, { method: 'DELETE' }),
+};
+
+export const backupApi = {
+    export: () => apiCall('/backup/export', { method: 'GET' }),
+    import: (data: any) => apiCall('/backup/import', { method: 'POST', body: JSON.stringify(data) }),
 };
