@@ -12,11 +12,13 @@ import {
     CardHeader, 
     CardTitle 
 } from "@/components/ui/card"
-import { toast } from "sonner"
+import { useToast } from "@/hooks/use-toast"
+import { ToastAction } from "@/components/ui/toast"
 
 export default function DataManagementPage() {
     const [isExporting, setIsExporting] = useState(false)
     const [isImporting, setIsImporting] = useState(false)
+    const { toast } = useToast()
 
     const handleExport = async () => {
         setIsExporting(true)
@@ -31,10 +33,17 @@ export default function DataManagementPage() {
             a.click()
             document.body.removeChild(a)
             URL.revokeObjectURL(url)
-            toast.success("Backup downloaded successfully")
+            toast({
+                title: "Backup Success",
+                description: "Full system backup has been downloaded successfully.",
+            })
         } catch (error: any) {
             console.error("Export failed:", error)
-            toast.error("Failed to export data: " + error.message)
+            toast({
+                variant: "destructive",
+                title: "Export Failed",
+                description: error.message || "An unexpected error occurred during export.",
+            })
         } finally {
             setIsExporting(false)
         }
@@ -59,18 +68,34 @@ export default function DataManagementPage() {
                     
                     const jsonData = JSON.parse(content)
                     await backupApi.import(jsonData)
-                    toast.success("Data imported successfully")
+                    toast({
+                        title: "Import Success",
+                        description: "All records have been successfully restored from backup.",
+                        action: (
+                            <ToastAction altText="Refresh" onClick={() => window.location.reload()}>
+                                Refresh Now
+                            </ToastAction>
+                        ),
+                    })
                     // Reset input
                     event.target.value = ""
                 } catch (err: any) {
-                    toast.error("Invalid backup file: " + err.message)
+                    toast({
+                        variant: "destructive",
+                        title: "Import Error",
+                        description: "The backup file is invalid or corrupted: " + err.message,
+                    })
                 } finally {
                     setIsImporting(false)
                 }
             }
             reader.readAsText(file)
         } catch (error: any) {
-            toast.error("Failed to read file: " + error.message)
+            toast({
+                variant: "destructive",
+                title: "File Error",
+                description: "Failed to read the backup file: " + error.message,
+            })
             setIsImporting(false)
         }
     }

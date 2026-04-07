@@ -21,21 +21,18 @@ const getApiBaseUrl = () => {
 
 const API_BASE_URL = getApiBaseUrl();
 
-// Log the API URL being used (helpful for debugging)
-if (typeof window !== 'undefined') {
-    console.log('[API Config] Base URL:', API_BASE_URL);
-    console.log('[API Config] Raw Environment:', process.env.NEXT_PUBLIC_API_URL);
-    console.log('[API Config] All NEXT_PUBLIC vars:', Object.keys(process.env).filter(k => k.startsWith('NEXT_PUBLIC_')));
-}
-
 export const apiCall = async (endpoint: string, options: RequestInit = {}) => {
     const fullUrl = `${API_BASE_URL}${endpoint}`;
+    
+    // Get token from localStorage
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+
     try {
-        console.log(`[API] Calling: ${fullUrl}`);
         const response = await fetch(fullUrl, {
             ...options,
             headers: {
                 'Content-Type': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
                 ...options.headers,
             },
         });
@@ -43,14 +40,16 @@ export const apiCall = async (endpoint: string, options: RequestInit = {}) => {
         const data = await response.json().catch(() => ({}));
 
         if (!response.ok) {
-            console.error(`[API] Error ${response.status} from ${fullUrl}:`, data);
+            // Handle unauthorized globally if needed
+            if (response.status === 401 && typeof window !== 'undefined' && endpoint !== '/auth/login') {
+                // Potential redirect or state clear could happen here
+                console.warn('[API] Unauthorized access detected');
+            }
             throw new Error(data.message || `Server responded with ${response.status}: ${response.statusText}`);
         }
 
-        console.log(`[API] Success from ${fullUrl}`);
         return data;
     } catch (error: any) {
-        console.error(`[API] Call failed: ${fullUrl}`, error);
         if (error.message === 'Failed to fetch') {
             throw new Error(`Connection failed. Cannot reach backend at ${API_BASE_URL}`);
         }
@@ -133,4 +132,35 @@ export const salariesApi = {
 export const backupApi = {
     export: () => apiCall('/backup/export', { method: 'GET' }),
     import: (data: any) => apiCall('/backup/import', { method: 'POST', body: JSON.stringify(data) }),
+};
+
+export const authApi = {
+    login: (credentials: any) => apiCall('/auth/login', { method: 'POST', body: JSON.stringify(credentials) }),
+    register: (data: any) => apiCall('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
+    getMe: () => apiCall('/auth/me', { method: 'GET' }),
+};
+
+export const userApi = {
+    getAll: () => apiCall('/users', { method: 'GET' }),
+    create: (data: any) => apiCall('/users', { method: 'POST', body: JSON.stringify(data) }),
+    update: (id: string, data: any) => apiCall(`/users/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    delete: (id: string) => apiCall(`/users/${id}`, { method: 'DELETE' }),
+};
+
+export const savingsApi = {
+    getAll: () => apiCall('/savings'),
+    getStats: () => apiCall('/savings/stats'),
+    getOne: (id: string) => apiCall(`/savings/${id}`),
+    create: (data: any) => apiCall('/savings', { method: 'POST', body: JSON.stringify(data) }),
+    update: (id: string, data: any) => apiCall(`/savings/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    delete: (id: string) => apiCall(`/savings/${id}`, { method: 'DELETE' }),
+};
+
+export const expensesApi = {
+    getAll: () => apiCall('/expenses'),
+    getStats: () => apiCall('/expenses/stats'),
+    getOne: (id: string) => apiCall(`/expenses/${id}`),
+    create: (data: any) => apiCall('/expenses', { method: 'POST', body: JSON.stringify(data) }),
+    update: (id: string, data: any) => apiCall(`/expenses/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    delete: (id: string) => apiCall(`/expenses/${id}`, { method: 'DELETE' }),
 };

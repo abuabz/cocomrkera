@@ -13,12 +13,15 @@ import FollowupPage from "@/components/followup/followup-page"
 import ReportsPage from "@/components/reports/reports-page"
 import EmployeeReports from "@/components/reports/employee-reports"
 import DataManagementPage from "@/components/data-management/data-management-page"
-import { Menu, X } from "lucide-react"
+import UserManagementPage from "@/components/user-management/user-management-page"
+import SavingsPage from "@/components/savings/savings-page"
+import ExpensesPage from "@/components/expenses/expenses-page"
+import { Menu, X, Lock } from "lucide-react"
+import { useAuth } from "@/lib/auth-context"
 
 export default function Home() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const { user, loading: authLoading, logout } = useAuth()
   const [activePage, setActivePage] = useState("dashboard")
-  const [isLoading, setIsLoading] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [desktopSidebarCollapsed, setDesktopSidebarCollapsed] = useState(false)
@@ -29,12 +32,6 @@ export default function Home() {
   }, [activePage])
 
   useEffect(() => {
-    const storedAuth = localStorage.getItem("isAuthenticated")
-    if (storedAuth === "true") {
-      setIsAuthenticated(true)
-    }
-    setIsLoading(false)
-
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
     }
@@ -43,18 +40,7 @@ export default function Home() {
     return () => window.removeEventListener("resize", checkMobile)
   }, [])
 
-  const handleLogin = () => {
-    setIsAuthenticated(true)
-    localStorage.setItem("isAuthenticated", "true")
-  }
-
-  const handleLogout = () => {
-    setIsAuthenticated(false)
-    localStorage.removeItem("isAuthenticated")
-    setActivePage("dashboard")
-  }
-
-  if (isLoading) {
+  if (authLoading) {
     return (
       <div className="flex items-center justify-center h-screen bg-background text-foreground">
         <div className="text-center flex flex-col items-center gap-6">
@@ -64,7 +50,7 @@ export default function Home() {
             <img src="/Mr.kera icon.png" alt="Loading" className="w-12 h-12 object-contain animate-pulse" />
           </div>
           <div className="space-y-2">
-            <h2 className="text-xl font-black text-primary tracking-widest uppercase">MR. KERA</h2>
+            <h2 className="text-xl font-black text-primary tracking-widest uppercase italic">MR. KERA</h2>
             <p className="text-xs font-bold text-muted-foreground tracking-[0.2em] uppercase animate-pulse">Initializing System...</p>
           </div>
         </div>
@@ -72,15 +58,33 @@ export default function Home() {
     )
   }
 
-  if (!isAuthenticated) {
-    return <LoginPage onLogin={handleLogin} />
+  if (!user) {
+    return <LoginPage />
+  }
+
+  const hasAccess = (pageId: string) => {
+    if (user.role === "admin") return true
+    return user.permissions.includes(pageId)
   }
 
   const renderPage = (pageId: string, Component: any) => {
     if (!mountedPages.has(pageId)) return null
+    
+    const allowed = hasAccess(pageId)
+
     return (
       <div className={activePage === pageId ? "block h-full w-full" : "hidden"}>
-        <Component />
+        {allowed ? (
+           <Component />
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full space-y-4">
+             <div className="p-6 bg-destructive/10 rounded-full">
+               <Lock className="w-12 h-12 text-destructive" />
+             </div>
+             <h2 className="text-2xl font-black uppercase italic tracking-tight">Access Denied</h2>
+             <p className="text-muted-foreground font-medium">You do not have permission to view this module.</p>
+          </div>
+        )}
       </div>
     )
   }
@@ -92,7 +96,7 @@ export default function Home() {
           <Sidebar
             activePage={activePage}
             setActivePage={setActivePage}
-            onLogout={handleLogout}
+            onLogout={logout}
             isMobile={false}
             sidebarOpen={sidebarOpen}
             setSidebarOpen={setSidebarOpen}
@@ -113,7 +117,7 @@ export default function Home() {
           <Sidebar
             activePage={activePage}
             setActivePage={setActivePage}
-            onLogout={handleLogout}
+            onLogout={logout}
             isMobile={true}
             sidebarOpen={sidebarOpen}
             setSidebarOpen={setSidebarOpen}
@@ -126,7 +130,7 @@ export default function Home() {
           <div className="bg-sidebar text-sidebar-foreground shadow-md p-4 flex items-center justify-between md:hidden">
             <div className="flex items-center gap-2">
               <img src="/Mr.kera icon.png" alt="Logo" className="w-8 h-8 object-contain" />
-              <h1 className="text-xl font-black tracking-tight">MR. KERA</h1>
+              <h1 className="text-xl font-black tracking-tight italic">MR. KERA</h1>
             </div>
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -148,6 +152,9 @@ export default function Home() {
           {renderPage("reports", ReportsPage)}
           {renderPage("employee-reports", EmployeeReports)}
           {renderPage("backup", DataManagementPage)}
+          {renderPage("users", UserManagementPage)}
+          {renderPage("savings", SavingsPage)}
+          {renderPage("expenses", ExpensesPage)}
         </div>
       </main>
     </div>
